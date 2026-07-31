@@ -102,7 +102,8 @@ Siempre con `area_id` para no mezclar plantas:
 
 ### Generales
 
-- Responder y documentar en español cuando sea contenido de producto.
+- **Idioma de la aplicación: español.** Toda la UI visible al usuario debe estar en español: menús, botones, leyendas, placeholders, breadcrumbs, toasts, mensajes de validación, instrucciones y textos de ayuda. No dejar cadenas en inglés en pantallas o componentes de producto.
+- Locale Laravel: `APP_LOCALE=es` (traducciones en `lang/es.json` y archivos de idioma).
 - No mezclar datos entre áreas; todo lo operativo debe estar scoped por `area_id`.
 
 ### Backend (Laravel)
@@ -123,7 +124,7 @@ Siempre con `area_id` para no mezclar plantas:
 
 ### Git / PRs
 
-- [ ] (pendiente)
+- **Mensajes de commit en español.** Describir el *porqué* del cambio en 1–2 oraciones claras (ej. qué problema resuelve o qué capacidad agrega), no solo listar archivos tocados.
 
 ---
 
@@ -135,3 +136,5 @@ Siempre con `area_id` para no mezclar plantas:
 | 2026-07-31 | SQLite en local | Setup rápido |
 | 2026-07-31 | Rol por área + `is_super_admin` | Flexibilidad multi-planta |
 | 2026-07-31 | Sin registro público | Solo admins crean usuarios |
+| 2026-07-31 | UI 100% en español | Producto orientado a operación en campo |
+| 2026-07-31 | Commits en español | Consistencia con idioma del proyecto |

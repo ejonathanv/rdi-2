@@ -1,9 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import {
-    Building2,
-    LayoutGrid,
-    Users,
-} from 'lucide-react';
+import { Building2, LayoutGrid, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -48,7 +44,7 @@ export function AppSidebar() {
     const mainNavItems = useMemo(() => {
         const items: NavItem[] = [
             {
-                title: 'Dashboard',
+                title: 'Panel',
                 href: dashboard(),
                 icon: LayoutGrid,
             },
@@ -57,7 +53,7 @@ export function AppSidebar() {
         if (auth.user?.is_super_admin || auth.user?.can_manage_areas) {
             if (auth.user?.is_super_admin) {
                 items.push({
-                    title: 'Areas',
+                    title: 'Áreas',
                     href: areasIndex(),
                     icon: Building2,
                 });
@@ -65,7 +61,7 @@ export function AppSidebar() {
 
             if (auth.user?.can_manage_users) {
                 items.push({
-                    title: 'Users',
+                    title: 'Usuarios',
                     href: usersIndex(),
                     icon: Users,
                 });
@@ -103,7 +99,7 @@ export function AppSidebar() {
                             }}
                         >
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select area" />
+                                <SelectValue placeholder="Seleccionar área" />
                             </SelectTrigger>
                             <SelectContent>
                                 {availableAreas.map((area) => (

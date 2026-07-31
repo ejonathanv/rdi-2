@@ -20,13 +20,10 @@ type Area = {
 export default function AreasEdit({ area }: { area: Area }) {
     return (
         <>
-            <Head title={`Edit ${area.name}`} />
+            <Head title={`Editar ${area.name}`} />
 
             <div className="flex flex-col gap-6 p-4">
-                <Heading
-                    title="Edit area"
-                    description={area.name}
-                />
+                <Heading title="Editar área" description={area.name} />
 
                 <Form
                     {...AreaController.update.form(area)}
@@ -35,7 +32,7 @@ export default function AreasEdit({ area }: { area: Area }) {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nombre</Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -46,7 +43,7 @@ export default function AreasEdit({ area }: { area: Area }) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="code">Code</Label>
+                                <Label htmlFor="code">Código</Label>
                                 <Input
                                     id="code"
                                     name="code"
@@ -57,7 +54,7 @@ export default function AreasEdit({ area }: { area: Area }) {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location">Location</Label>
+                                <Label htmlFor="location">Ubicación</Label>
                                 <Input
                                     id="location"
                                     name="location"
@@ -67,23 +64,27 @@ export default function AreasEdit({ area }: { area: Area }) {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <input type="hidden" name="is_active" value="0" />
+                                <input
+                                    type="hidden"
+                                    name="is_active"
+                                    value="0"
+                                />
                                 <Checkbox
                                     id="is_active"
                                     name="is_active"
                                     value="1"
                                     defaultChecked={area.is_active}
                                 />
-                                <Label htmlFor="is_active">Active</Label>
+                                <Label htmlFor="is_active">Activa</Label>
                             </div>
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner />}
-                                    Save changes
+                                    Guardar cambios
                                 </Button>
                                 <Button variant="outline" asChild>
-                                    <Link href={areasIndex()}>Cancel</Link>
+                                    <Link href={areasIndex()}>Cancelar</Link>
                                 </Button>
                             </div>
                         </>
@@ -97,11 +98,11 @@ export default function AreasEdit({ area }: { area: Area }) {
 AreasEdit.layout = {
     breadcrumbs: [
         {
-            title: 'Areas',
+            title: 'Áreas',
             href: areasIndex(),
         },
         {
-            title: 'Edit',
+            title: 'Editar',
             href: '#',
         },
     ],

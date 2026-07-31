@@ -1,0 +1,13 @@
+{
+    "Area created.": "Área creada.",
+    "Area updated.": "Área actualizada.",
+    "Area deleted.": "Área eliminada.",
+    "User created.": "Usuario creado.",
+    "User updated.": "Usuario actualizado.",
+    "User deleted.": "Usuario eliminado.",
+    "Profile updated.": "Perfil actualizado.",
+    "Password updated.": "Contraseña actualizada.",
+    "Only super admins can grant super admin access.": "Solo los super administradores pueden otorgar acceso de super administrador.",
+    "At least one area membership is required.": "Se requiere al menos una membresía de área.",
+    "You cannot assign users to this area.": "No puedes asignar usuarios a esta área."
+}

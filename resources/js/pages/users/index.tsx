@@ -28,19 +28,19 @@ export default function UsersIndex({
 }) {
     return (
         <>
-            <Head title="Users" />
+            <Head title="Usuarios" />
 
             <div className="flex flex-col gap-6 p-4">
                 <div className="flex items-start justify-between gap-4">
                     <Heading
-                        title="Users"
-                        description="Guards, contacts and area admins"
+                        title="Usuarios"
+                        description="Guardias, contactos y administradores de área"
                     />
                     {canCreate && (
                         <Button asChild>
                             <Link href={usersCreate()}>
                                 <Plus className="size-4" />
-                                New user
+                                Nuevo usuario
                             </Link>
                         </Button>
                     )}
@@ -50,13 +50,13 @@ export default function UsersIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Name</th>
-                                <th className="px-4 py-3 font-medium">Email</th>
+                                <th className="px-4 py-3 font-medium">Nombre</th>
+                                <th className="px-4 py-3 font-medium">Correo</th>
                                 <th className="px-4 py-3 font-medium">
-                                    Memberships
+                                    Membresías
                                 </th>
                                 <th className="px-4 py-3 font-medium text-right">
-                                    Actions
+                                    Acciones
                                 </th>
                             </tr>
                         </thead>
@@ -67,7 +67,7 @@ export default function UsersIndex({
                                         colSpan={4}
                                         className="px-4 py-8 text-center text-muted-foreground"
                                     >
-                                        No users yet.
+                                        Aún no hay usuarios.
                                     </td>
                                 </tr>
                             )}
@@ -79,7 +79,7 @@ export default function UsersIndex({
                                         </div>
                                         {user.is_super_admin && (
                                             <Badge className="mt-1">
-                                                Super admin
+                                                Super administrador
                                             </Badge>
                                         )}
                                     </td>
@@ -114,7 +114,7 @@ export default function UsersIndex({
                                                 asChild
                                             >
                                                 <Link href={usersEdit(user)}>
-                                                    Edit
+                                                    Editar
                                                 </Link>
                                             </Button>
                                             <Button
@@ -123,7 +123,7 @@ export default function UsersIndex({
                                                 onClick={() => {
                                                     if (
                                                         confirm(
-                                                            'Delete this user?',
+                                                            '¿Eliminar este usuario?',
                                                         )
                                                     ) {
                                                         router.delete(
@@ -132,7 +132,7 @@ export default function UsersIndex({
                                                     }
                                                 }}
                                             >
-                                                Delete
+                                                Eliminar
                                             </Button>
                                         </div>
                                     </td>
@@ -149,7 +149,7 @@ export default function UsersIndex({
 UsersIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Users',
+            title: 'Usuarios',
             href: usersIndex(),
         },
     ],

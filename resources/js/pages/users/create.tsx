@@ -74,12 +74,12 @@ export default function UsersCreate({
 
     return (
         <>
-            <Head title="New user" />
+            <Head title="Nuevo usuario" />
 
             <div className="flex flex-col gap-6 p-4">
                 <Heading
-                    title="New user"
-                    description="Create a user and assign area roles"
+                    title="Nuevo usuario"
+                    description="Crea un usuario y asígnale roles por área"
                 />
 
                 <form
@@ -90,7 +90,7 @@ export default function UsersCreate({
                     }}
                 >
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">Nombre</Label>
                         <Input
                             id="name"
                             value={data.name}
@@ -101,7 +101,7 @@ export default function UsersCreate({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">Correo electrónico</Label>
                         <Input
                             id="email"
                             type="email"
@@ -113,7 +113,7 @@ export default function UsersCreate({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">Contraseña</Label>
                         <PasswordInput
                             id="password"
                             value={data.password}
@@ -127,7 +127,7 @@ export default function UsersCreate({
 
                     <div className="grid gap-2">
                         <Label htmlFor="password_confirmation">
-                            Confirm password
+                            Confirmar contraseña
                         </Label>
                         <PasswordInput
                             id="password_confirmation"
@@ -151,7 +151,7 @@ export default function UsersCreate({
                                     setData('is_super_admin', checked === true)
                                 }
                             />
-                            <Label htmlFor="is_super_admin">Super admin</Label>
+                            <Label htmlFor="is_super_admin">Super administrador</Label>
                         </div>
                     )}
 
@@ -159,8 +159,8 @@ export default function UsersCreate({
                         <div className="flex items-center justify-between">
                             <Heading
                                 variant="small"
-                                title="Area memberships"
-                                description="One role per area"
+                                title="Membresías de área"
+                                description="Un rol por área"
                             />
                             <Button
                                 type="button"
@@ -170,7 +170,7 @@ export default function UsersCreate({
                                 disabled={areas.length === 0}
                             >
                                 <Plus className="size-4" />
-                                Add
+                                Agregar
                             </Button>
                         </div>
                         <InputError message={errors.memberships} />
@@ -181,7 +181,7 @@ export default function UsersCreate({
                                 className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-end"
                             >
                                 <div className="grid flex-1 gap-2">
-                                    <Label>Area</Label>
+                                    <Label>Área</Label>
                                     <Select
                                         value={membership.area_id}
                                         onValueChange={(value) =>
@@ -193,7 +193,7 @@ export default function UsersCreate({
                                         }
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select area" />
+                                            <SelectValue placeholder="Seleccionar área" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {areas.map((area) => (
@@ -215,7 +215,7 @@ export default function UsersCreate({
                                     />
                                 </div>
                                 <div className="grid flex-1 gap-2">
-                                    <Label>Role</Label>
+                                    <Label>Rol</Label>
                                     <Select
                                         value={membership.role}
                                         onValueChange={(value) =>
@@ -227,7 +227,7 @@ export default function UsersCreate({
                                         }
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select role" />
+                                            <SelectValue placeholder="Seleccionar rol" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {roles.map((role) => (
@@ -261,10 +261,10 @@ export default function UsersCreate({
                     <div className="flex gap-3">
                         <Button type="submit" disabled={processing}>
                             {processing && <Spinner />}
-                            Create user
+                            Crear usuario
                         </Button>
                         <Button variant="outline" asChild>
-                            <Link href={usersIndex()}>Cancel</Link>
+                            <Link href={usersIndex()}>Cancelar</Link>
                         </Button>
                     </div>
                 </form>
@@ -276,11 +276,11 @@ export default function UsersCreate({
 UsersCreate.layout = {
     breadcrumbs: [
         {
-            title: 'Users',
+            title: 'Usuarios',
             href: usersIndex(),
         },
         {
-            title: 'Create',
+            title: 'Crear',
             href: usersCreate(),
         },
     ],

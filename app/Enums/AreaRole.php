@@ -11,9 +11,9 @@ enum AreaRole: string
     public function label(): string
     {
         return match ($this) {
-            self::Admin => 'Admin',
-            self::Guard => 'Guard',
-            self::Contact => 'Contact',
+            self::Admin => 'Administrador',
+            self::Guard => 'Guardia',
+            self::Contact => 'Contacto',
         };
     }
 

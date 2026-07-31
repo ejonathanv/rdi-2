@@ -3,7 +3,12 @@ import { Plus } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { index as areasIndex, create as areasCreate, edit as areasEdit, destroy as areasDestroy } from '@/routes/areas';
+import {
+    index as areasIndex,
+    create as areasCreate,
+    edit as areasEdit,
+    destroy as areasDestroy,
+} from '@/routes/areas';
 
 type AreaRow = {
     id: number;
@@ -23,19 +28,19 @@ export default function AreasIndex({
 }) {
     return (
         <>
-            <Head title="Areas" />
+            <Head title="Áreas" />
 
             <div className="flex flex-col gap-6 p-4">
                 <div className="flex items-start justify-between gap-4">
                     <Heading
-                        title="Areas"
-                        description="Industrial plants and locations scoped for reports"
+                        title="Áreas"
+                        description="Plantas e ubicaciones aisladas para reportes"
                     />
                     {canCreate && (
                         <Button asChild>
                             <Link href={areasCreate()}>
                                 <Plus className="size-4" />
-                                New area
+                                Nueva área
                             </Link>
                         </Button>
                     )}
@@ -45,14 +50,18 @@ export default function AreasIndex({
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Name</th>
-                                <th className="px-4 py-3 font-medium">Code</th>
-                                <th className="px-4 py-3 font-medium">Location</th>
-                                <th className="px-4 py-3 font-medium">Users</th>
-                                <th className="px-4 py-3 font-medium">Status</th>
+                                <th className="px-4 py-3 font-medium">Nombre</th>
+                                <th className="px-4 py-3 font-medium">Código</th>
+                                <th className="px-4 py-3 font-medium">
+                                    Ubicación
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Usuarios
+                                </th>
+                                <th className="px-4 py-3 font-medium">Estado</th>
                                 {canCreate && (
                                     <th className="px-4 py-3 font-medium text-right">
-                                        Actions
+                                        Acciones
                                     </th>
                                 )}
                             </tr>
@@ -64,7 +73,7 @@ export default function AreasIndex({
                                         colSpan={canCreate ? 6 : 5}
                                         className="px-4 py-8 text-center text-muted-foreground"
                                     >
-                                        No areas yet.
+                                        Aún no hay áreas.
                                     </td>
                                 </tr>
                             )}
@@ -79,7 +88,9 @@ export default function AreasIndex({
                                     <td className="px-4 py-3 text-muted-foreground">
                                         {area.location ?? '—'}
                                     </td>
-                                    <td className="px-4 py-3">{area.users_count}</td>
+                                    <td className="px-4 py-3">
+                                        {area.users_count}
+                                    </td>
                                     <td className="px-4 py-3">
                                         <Badge
                                             variant={
@@ -89,8 +100,8 @@ export default function AreasIndex({
                                             }
                                         >
                                             {area.is_active
-                                                ? 'Active'
-                                                : 'Inactive'}
+                                                ? 'Activa'
+                                                : 'Inactiva'}
                                         </Badge>
                                     </td>
                                     {canCreate && (
@@ -104,7 +115,7 @@ export default function AreasIndex({
                                                     <Link
                                                         href={areasEdit(area)}
                                                     >
-                                                        Edit
+                                                        Editar
                                                     </Link>
                                                 </Button>
                                                 <Button
@@ -113,7 +124,7 @@ export default function AreasIndex({
                                                     onClick={() => {
                                                         if (
                                                             confirm(
-                                                                'Delete this area?',
+                                                                '¿Eliminar esta área?',
                                                             )
                                                         ) {
                                                             router.delete(
@@ -124,7 +135,7 @@ export default function AreasIndex({
                                                         }
                                                     }}
                                                 >
-                                                    Delete
+                                                    Eliminar
                                                 </Button>
                                             </div>
                                         </td>
@@ -142,7 +153,7 @@ export default function AreasIndex({
 AreasIndex.layout = {
     breadcrumbs: [
         {
-            title: 'Areas',
+            title: 'Áreas',
             href: areasIndex(),
         },
     ],

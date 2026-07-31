@@ -12,12 +12,12 @@ import { index as areasIndex, create as areasCreate } from '@/routes/areas';
 export default function AreasCreate() {
     return (
         <>
-            <Head title="New area" />
+            <Head title="Nueva área" />
 
             <div className="flex flex-col gap-6 p-4">
                 <Heading
-                    title="New area"
-                    description="Create a plant or location"
+                    title="Nueva área"
+                    description="Crear una planta o ubicación"
                 />
 
                 <Form
@@ -27,7 +27,7 @@ export default function AreasCreate() {
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Nombre</Label>
                                 <Input
                                     id="name"
                                     name="name"
@@ -38,7 +38,7 @@ export default function AreasCreate() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="code">Code</Label>
+                                <Label htmlFor="code">Código</Label>
                                 <Input
                                     id="code"
                                     name="code"
@@ -49,7 +49,7 @@ export default function AreasCreate() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="location">Location</Label>
+                                <Label htmlFor="location">Ubicación</Label>
                                 <Input
                                     id="location"
                                     name="location"
@@ -59,23 +59,27 @@ export default function AreasCreate() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <input type="hidden" name="is_active" value="0" />
+                                <input
+                                    type="hidden"
+                                    name="is_active"
+                                    value="0"
+                                />
                                 <Checkbox
                                     id="is_active"
                                     name="is_active"
                                     value="1"
                                     defaultChecked
                                 />
-                                <Label htmlFor="is_active">Active</Label>
+                                <Label htmlFor="is_active">Activa</Label>
                             </div>
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={processing}>
                                     {processing && <Spinner />}
-                                    Create area
+                                    Crear área
                                 </Button>
                                 <Button variant="outline" asChild>
-                                    <Link href={areasIndex()}>Cancel</Link>
+                                    <Link href={areasIndex()}>Cancelar</Link>
                                 </Button>
                             </div>
                         </>
@@ -89,11 +93,11 @@ export default function AreasCreate() {
 AreasCreate.layout = {
     breadcrumbs: [
         {
-            title: 'Areas',
+            title: 'Áreas',
             href: areasIndex(),
         },
         {
-            title: 'Create',
+            title: 'Crear',
             href: areasCreate(),
         },
     ],
