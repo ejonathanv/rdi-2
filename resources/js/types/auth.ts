@@ -5,6 +5,9 @@ export type User = {
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
+    is_super_admin?: boolean;
+    can_manage_areas?: boolean;
+    can_manage_users?: boolean;
     created_at: string;
     updated_at: string;
     [key: string]: unknown;
@@ -12,6 +15,26 @@ export type User = {
 
 export type Auth = {
     user: User;
+};
+
+export type AreaSummary = {
+    id: number;
+    name: string;
+    code: string;
+    is_active?: boolean;
+    role?: string;
+};
+
+export type AreaMembership = {
+    area_id: number;
+    area_name?: string;
+    area_code?: string;
+    role: string;
+};
+
+export type RoleOption = {
+    value: string;
+    label: string;
 };
 
 /* @chisel-passkeys */
