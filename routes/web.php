@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AreaController;
+use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CurrentAreaController;
+use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +17,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('manage.areas')->group(function () {
         Route::resource('areas', AreaController::class)->except(['show']);
         Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('rounds', RoundController::class)->except(['show']);
+
+        Route::post('rounds/{round}/checkpoints', [CheckpointController::class, 'store'])
+            ->name('rounds.checkpoints.store');
+        Route::put('checkpoints/{checkpoint}', [CheckpointController::class, 'update'])
+            ->name('checkpoints.update');
+        Route::delete('checkpoints/{checkpoint}', [CheckpointController::class, 'destroy'])
+            ->name('checkpoints.destroy');
+        Route::put('rounds/{round}/checkpoints/reorder', [CheckpointController::class, 'reorder'])
+            ->name('rounds.checkpoints.reorder');
     });
 });
 

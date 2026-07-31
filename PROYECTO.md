@@ -88,13 +88,20 @@ tests/Feature/
 
 ---
 
-## Dominio futuro (fase 2+)
+## Dominio actual (configuración)
 
-Siempre con `area_id` para no mezclar plantas:
+Siempre scoped por `area_id`:
 
-- `rounds`, `checkpoints` (QR), `round_assignments`
-- `patrol_runs` / `checkpoint_logs`
-- `incidents`
+- **`rounds`**: recorridos de una planta (`title`, `instructions`, `is_active`)
+- **`checkpoints`**: puntos de revisión ordenados (`name`, `instructions`, `position`, `token` UUID para QR futuro)
+
+Gestión: super-admin y admin de área, filtrada por el área activa del sidebar.
+
+## Dominio futuro
+
+- Cuestionarios por punto (foto de incidencia o “sin novedades”)
+- `round_assignments`, `patrol_runs` / `checkpoint_logs`, `incidents`
+- Escaneo QR con el `token` del checkpoint
 
 ---
 
@@ -121,6 +128,7 @@ Siempre con `area_id` para no mezclar plantas:
 
 - Unique `(user_id, area_id)` en `area_user`.
 - `areas.code` único.
+- `checkpoints.token` único (preparado para QR).
 
 ### Git / PRs
 
@@ -138,3 +146,4 @@ Siempre con `area_id` para no mezclar plantas:
 | 2026-07-31 | Sin registro público | Solo admins crean usuarios |
 | 2026-07-31 | UI 100% en español | Producto orientado a operación en campo |
 | 2026-07-31 | Commits en español | Consistencia con idioma del proyecto |
+| 2026-07-31 | Recorridos + puntos por área | Configuración antes de ejecución/cuestionarios |

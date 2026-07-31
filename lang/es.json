@@ -9,5 +9,13 @@
     "Password updated.": "Contraseña actualizada.",
     "Only super admins can grant super admin access.": "Solo los super administradores pueden otorgar acceso de super administrador.",
     "At least one area membership is required.": "Se requiere al menos una membresía de área.",
-    "You cannot assign users to this area.": "No puedes asignar usuarios a esta área."
+    "You cannot assign users to this area.": "No puedes asignar usuarios a esta área.",
+    "No puedes crear recorridos en esta área.": "No puedes crear recorridos en esta área.",
+    "Recorrido creado.": "Recorrido creado.",
+    "Recorrido actualizado.": "Recorrido actualizado.",
+    "Recorrido eliminado.": "Recorrido eliminado.",
+    "Punto de revisión creado.": "Punto de revisión creado.",
+    "Punto de revisión actualizado.": "Punto de revisión actualizado.",
+    "Punto de revisión eliminado.": "Punto de revisión eliminado.",
+    "Orden de puntos actualizado.": "Orden de puntos actualizado."
 }

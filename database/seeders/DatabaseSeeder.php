@@ -4,9 +4,11 @@ namespace Database\Seeders;
 
 use App\Enums\AreaRole;
 use App\Models\Area;
+use App\Models\Round;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,5 +44,36 @@ class DatabaseSeeder extends Seeder
         $admin->areas()->attach($area->id, ['role' => AreaRole::Admin->value]);
         $guard->areas()->attach($area->id, ['role' => AreaRole::Guard->value]);
         $contact->areas()->attach($area->id, ['role' => AreaRole::Contact->value]);
+
+        $round = Round::query()->create([
+            'area_id' => $area->id,
+            'title' => 'Recorrido perimetral',
+            'instructions' => 'Recorrer el perímetro de la planta verificando accesos y cercas.',
+            'is_active' => true,
+        ]);
+
+        $round->checkpoints()->createMany([
+            [
+                'name' => 'Entrada principal',
+                'instructions' => 'Verificar portón, iluminación y bitácora de acceso.',
+                'position' => 1,
+                'token' => (string) Str::uuid(),
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Almacén',
+                'instructions' => 'Revisar candados, sellos y evidencia de manipulación.',
+                'position' => 2,
+                'token' => (string) Str::uuid(),
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Estacionamiento',
+                'instructions' => 'Verificar vehículos no autorizados y estado general.',
+                'position' => 3,
+                'token' => (string) Str::uuid(),
+                'is_active' => true,
+            ],
+        ]);
     }
 }

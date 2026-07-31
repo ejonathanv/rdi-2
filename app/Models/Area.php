@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -52,5 +53,13 @@ class Area extends Model
     public function admins(): BelongsToMany
     {
         return $this->users()->wherePivot('role', AreaRole::Admin->value);
+    }
+
+    /**
+     * @return HasMany<Round, $this>
+     */
+    public function rounds(): HasMany
+    {
+        return $this->hasMany(Round::class);
     }
 }
