@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { destroy as destroyCheckpoint } from '@/routes/checkpoints';
+import { edit as editQuestionnaire } from '@/routes/checkpoints/questionnaire';
 import { index as roundsIndex } from '@/routes/rounds';
 import { reorder } from '@/routes/rounds/checkpoints';
 
@@ -28,6 +29,7 @@ type CheckpointRow = {
     position: number;
     token: string;
     is_active: boolean;
+    questions_count: number;
 };
 
 type RoundData = {
@@ -280,6 +282,14 @@ export default function RoundsEdit({
                                             <p className="font-mono text-xs text-muted-foreground">
                                                 Token: {checkpoint.token}
                                             </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {checkpoint.questions_count}{' '}
+                                                {checkpoint.questions_count ===
+                                                1
+                                                    ? 'pregunta'
+                                                    : 'preguntas'}{' '}
+                                                en el cuestionario
+                                            </p>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             <Button
@@ -307,6 +317,19 @@ export default function RoundsEdit({
                                                 }
                                             >
                                                 <ArrowDown className="size-4" />
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                asChild
+                                            >
+                                                <Link
+                                                    href={editQuestionnaire(
+                                                        checkpoint,
+                                                    )}
+                                                >
+                                                    Configurar cuestionario
+                                                </Link>
                                             </Button>
                                             <Button
                                                 type="button"

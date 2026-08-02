@@ -64,12 +64,12 @@ php artisan migrate:fresh --seed
 ```
 app/
   Enums/AreaRole.php
-  Models/Area.php, AreaUser.php, User.php
+  Models/Area.php, Round.php, Checkpoint.php, CheckpointQuestion.php, …
   Policies/
-  Http/Controllers/AreaController.php, UserController.php
+  Http/Controllers/RoundController.php, Checkpoint*Controller.php, …
 routes/web.php
 resources/js/
-  pages/areas/, pages/users/
+  pages/areas/, pages/users/, pages/rounds/, pages/checkpoints/
   components/app-sidebar.tsx
 tests/Feature/
 ```
@@ -94,12 +94,15 @@ Siempre scoped por `area_id`:
 
 - **`rounds`**: recorridos de una planta (`title`, `instructions`, `is_active`)
 - **`checkpoints`**: puntos de revisión ordenados (`name`, `instructions`, `position`, `token` UUID para QR futuro)
+- **`checkpoint_questions` / `checkpoint_question_options`**: cuestionario de opción múltiple por punto (configuración admin)
 
 Gestión: super-admin y admin de área, filtrada por el área activa del sidebar.
 
+Desde editar recorrido → **Configurar cuestionario** en cada punto.
+
 ## Dominio futuro
 
-- Cuestionarios por punto (foto de incidencia o “sin novedades”)
+- Ejecución del cuestionario al escanear QR (vs reporte manual de incidencia)
 - `round_assignments`, `patrol_runs` / `checkpoint_logs`, `incidents`
 - Escaneo QR con el `token` del checkpoint
 
@@ -147,3 +150,4 @@ Gestión: super-admin y admin de área, filtrada por el área activa del sidebar
 | 2026-07-31 | UI 100% en español | Producto orientado a operación en campo |
 | 2026-07-31 | Commits en español | Consistencia con idioma del proyecto |
 | 2026-07-31 | Recorridos + puntos por área | Configuración antes de ejecución/cuestionarios |
+| 2026-08-02 | Cuestionario de opción múltiple por checkpoint | Prep. para reporte estructurado al escanear QR |

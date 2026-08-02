@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckpointController;
+use App\Http\Controllers\CheckpointQuestionController;
+use App\Http\Controllers\CheckpointQuestionnaireController;
 use App\Http\Controllers\CurrentAreaController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
@@ -27,6 +29,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('checkpoints.destroy');
         Route::put('rounds/{round}/checkpoints/reorder', [CheckpointController::class, 'reorder'])
             ->name('rounds.checkpoints.reorder');
+
+        Route::get('checkpoints/{checkpoint}/questionnaire', [CheckpointQuestionnaireController::class, 'edit'])
+            ->name('checkpoints.questionnaire.edit');
+        Route::post('checkpoints/{checkpoint}/questions', [CheckpointQuestionController::class, 'store'])
+            ->name('checkpoints.questions.store');
+        Route::put('checkpoints/{checkpoint}/questions/reorder', [CheckpointQuestionController::class, 'reorder'])
+            ->name('checkpoints.questions.reorder');
+        Route::put('questions/{question}', [CheckpointQuestionController::class, 'update'])
+            ->name('questions.update');
+        Route::delete('questions/{question}', [CheckpointQuestionController::class, 'destroy'])
+            ->name('questions.destroy');
     });
 });
 

@@ -17,5 +17,11 @@
     "Punto de revisión creado.": "Punto de revisión creado.",
     "Punto de revisión actualizado.": "Punto de revisión actualizado.",
     "Punto de revisión eliminado.": "Punto de revisión eliminado.",
-    "Orden de puntos actualizado.": "Orden de puntos actualizado."
+    "Orden de puntos actualizado.": "Orden de puntos actualizado.",
+    "Debes agregar al menos dos opciones de respuesta.": "Debes agregar al menos dos opciones de respuesta.",
+    "Cada opción debe tener un texto.": "Cada opción debe tener un texto.",
+    "Pregunta agregada al cuestionario.": "Pregunta agregada al cuestionario.",
+    "Pregunta actualizada.": "Pregunta actualizada.",
+    "Pregunta eliminada.": "Pregunta eliminada.",
+    "Orden de preguntas actualizado.": "Orden de preguntas actualizado."
 }

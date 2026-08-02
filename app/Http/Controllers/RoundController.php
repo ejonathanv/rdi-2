@@ -65,7 +65,7 @@ class RoundController extends Controller
     {
         $this->authorize('update', $round);
 
-        $round->load(['area:id,name,code', 'checkpoints']);
+        $round->load(['area:id,name,code', 'checkpoints' => fn ($query) => $query->withCount('questions')]);
 
         return Inertia::render('rounds/edit', [
             'area' => $round->area->only(['id', 'name', 'code']),
@@ -81,6 +81,7 @@ class RoundController extends Controller
                     'position' => $checkpoint->position,
                     'token' => $checkpoint->token,
                     'is_active' => $checkpoint->is_active,
+                    'questions_count' => $checkpoint->questions_count,
                 ]),
             ],
         ]);

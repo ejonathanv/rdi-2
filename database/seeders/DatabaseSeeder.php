@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $round->checkpoints()->createMany([
+        $checkpoints = $round->checkpoints()->createMany([
             [
                 'name' => 'Entrada principal',
                 'instructions' => 'Verificar portón, iluminación y bitácora de acceso.',
@@ -74,6 +74,20 @@ class DatabaseSeeder extends Seeder
                 'token' => (string) Str::uuid(),
                 'is_active' => true,
             ],
+        ]);
+
+        $almacen = $checkpoints->firstWhere('name', 'Almacén');
+
+        $question = $almacen->questions()->create([
+            'body' => '¿Está el candado de la puerta bien cerrado?',
+            'position' => 1,
+            'is_active' => true,
+        ]);
+
+        $question->options()->createMany([
+            ['label' => 'Sí', 'position' => 1],
+            ['label' => 'No', 'position' => 2],
+            ['label' => 'No sé', 'position' => 3],
         ]);
     }
 }
