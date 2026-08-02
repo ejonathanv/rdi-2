@@ -129,6 +129,46 @@ class User extends Authenticatable implements PasskeyUser
         return $role === AreaRole::Guard || $role === AreaRole::Admin;
     }
 
+    public function isGuardOnly(): bool
+    {
+        if ($this->isSuperAdmin() || $this->canManageAnyArea()) {
+            return false;
+        }
+
+        return $this->hasGuardRole();
+    }
+
+    public function hasGuardRole(): bool
+    {
+        return $this->areas()
+            ->wherePivot('role', AreaRole::Guard->value)
+            ->exists();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function guardAreaIds(): array
+    {
+        return $this->areas()
+            ->wherePivot('role', AreaRole::Guard->value)
+            ->pluck('areas.id')
+            ->all();
+    }
+
+    public function homePath(): string
+    {
+        if ($this->isSuperAdmin() || $this->canManageAnyArea()) {
+            return route('dashboard', absolute: false);
+        }
+
+        if ($this->hasGuardRole()) {
+            return route('guard.home', absolute: false);
+        }
+
+        return route('dashboard', absolute: false);
+    }
+
     /**
      * Area IDs this user can manage (all areas if super-admin).
      *

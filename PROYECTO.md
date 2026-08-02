@@ -69,7 +69,8 @@ app/
   Http/Controllers/RoundController.php, Checkpoint*Controller.php, …
 routes/web.php
 resources/js/
-  pages/areas/, pages/users/, pages/rounds/, pages/checkpoints/
+  pages/areas/, pages/users/, pages/rounds/, pages/checkpoints/, pages/guard/
+
   components/app-sidebar.tsx
 tests/Feature/
 ```
@@ -103,10 +104,13 @@ Desde editar recorrido → **Configurar cuestionario** / **Descargar QR** en cad
 
 Escaneo: `GET/POST /scan/{token}` (usuario autenticado con rol `guard` o `admin` del área).
 
+Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de recorridos activos en áreas con rol **`guard`**.
+
 ## Dominio futuro
 
+- Persistencia de `patrol_runs` al iniciar un recorrido
 - Reporte manual de incidencia (alternativa al cuestionario)
-- `round_assignments`, `patrol_runs` / reportes agregados por guardia
+- `round_assignments` / reportes agregados por guardia
 - Notificaciones a contactos
 
 ---
@@ -156,3 +160,4 @@ Escaneo: `GET/POST /scan/{token}` (usuario autenticado con rol `guard` o `admin`
 | 2026-07-31 | Recorridos + puntos por área | Configuración antes de ejecución/cuestionarios |
 | 2026-08-02 | Cuestionario de opción múltiple por checkpoint | Prep. para reporte estructurado al escanear QR |
 | 2026-08-02 | QR (`qrcode` npm) + scan autenticado por token | Guardia responde; base para reportes por usuario |
+| 2026-08-02 | Panel de acciones del guardia post-login | Separar UX operativa del dashboard de admin |

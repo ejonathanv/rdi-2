@@ -85,6 +85,8 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'is_super_admin' => $user->isSuperAdmin(),
+                    'is_guard_only' => $user->isGuardOnly(),
+                    'home_path' => $user->homePath(),
                     'can_manage_areas' => $user->canManageAnyArea(),
                     'can_manage_users' => $user->canManageAnyArea(),
                     'created_at' => $user->created_at,

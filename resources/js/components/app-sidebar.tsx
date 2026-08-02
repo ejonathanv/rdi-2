@@ -23,6 +23,7 @@ import {
 import { update as updateCurrentArea } from '@/routes/current-area';
 import { dashboard } from '@/routes';
 import { index as areasIndex } from '@/routes/areas';
+import { home as guardHome } from '@/routes/guard';
 import { index as roundsIndex } from '@/routes/rounds';
 import { index as usersIndex } from '@/routes/users';
 import type { AreaSummary, NavItem } from '@/types';
@@ -31,6 +32,8 @@ type PageProps = {
     auth: {
         user: {
             is_super_admin?: boolean;
+            is_guard_only?: boolean;
+            home_path?: string;
             can_manage_areas?: boolean;
             can_manage_users?: boolean;
         } | null;
@@ -42,11 +45,15 @@ type PageProps = {
 export function AppSidebar() {
     const { auth, currentArea, availableAreas } = usePage<PageProps>().props;
 
+    const panelHref = auth.user?.is_guard_only
+        ? guardHome()
+        : (auth.user?.home_path ?? dashboard());
+
     const mainNavItems = useMemo(() => {
         const items: NavItem[] = [
             {
                 title: 'Panel',
-                href: dashboard(),
+                href: panelHref,
                 icon: LayoutGrid,
             },
         ];
@@ -76,7 +83,7 @@ export function AppSidebar() {
         }
 
         return items;
-    }, [auth.user]);
+    }, [auth.user, panelHref]);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -84,7 +91,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={panelHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

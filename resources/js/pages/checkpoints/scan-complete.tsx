@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { show as showScan } from '@/routes/checkpoints/scan';
@@ -11,6 +11,11 @@ export default function CheckpointScanComplete({
     checkpoint: { name: string; token: string };
     round: { title: string };
 }) {
+    const { auth } = usePage<{
+        auth: { user: { home_path?: string } | null };
+    }>().props;
+    const panelHref = auth.user?.home_path ?? dashboard();
+
     return (
         <>
             <Head title="Respuestas enviadas" />
@@ -28,7 +33,7 @@ export default function CheckpointScanComplete({
 
                 <div className="flex flex-col gap-2 sm:flex-row">
                     <Button asChild>
-                        <Link href={dashboard()}>Ir al panel</Link>
+                        <Link href={panelHref}>Ir al panel</Link>
                     </Button>
                     <Button variant="outline" asChild>
                         <Link href={showScan(checkpoint.token)}>

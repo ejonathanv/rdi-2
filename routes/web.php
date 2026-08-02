@@ -6,6 +6,9 @@ use App\Http\Controllers\CheckpointQuestionController;
 use App\Http\Controllers\CheckpointQuestionnaireController;
 use App\Http\Controllers\CheckpointScanController;
 use App\Http\Controllers\CurrentAreaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuardHomeController;
+use App\Http\Controllers\GuardRoundController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -13,9 +16,13 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::put('current-area', [CurrentAreaController::class, 'update'])->name('current-area.update');
+
+    Route::get('guardia', GuardHomeController::class)->name('guard.home');
+    Route::get('guardia/recorridos', [GuardRoundController::class, 'index'])->name('guard.rounds.index');
+    Route::get('guardia/recorridos/{round}', [GuardRoundController::class, 'show'])->name('guard.rounds.show');
 
     Route::get('scan/{token}', [CheckpointScanController::class, 'show'])
         ->name('checkpoints.scan.show');
