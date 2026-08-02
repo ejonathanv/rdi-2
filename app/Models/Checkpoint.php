@@ -63,4 +63,12 @@ class Checkpoint extends Model
     {
         return $this->hasMany(CheckpointQuestion::class)->orderBy('position');
     }
+
+    /**
+     * @return HasMany<CheckpointSubmission, $this>
+     */
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(CheckpointSubmission::class);
+    }
 }

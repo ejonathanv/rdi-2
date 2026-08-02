@@ -23,5 +23,10 @@
     "Pregunta agregada al cuestionario.": "Pregunta agregada al cuestionario.",
     "Pregunta actualizada.": "Pregunta actualizada.",
     "Pregunta eliminada.": "Pregunta eliminada.",
-    "Orden de preguntas actualizado.": "Orden de preguntas actualizado."
+    "Orden de preguntas actualizado.": "Orden de preguntas actualizado.",
+    "Respuestas enviadas correctamente.": "Respuestas enviadas correctamente.",
+    "Debes responder todas las preguntas.": "Debes responder todas las preguntas.",
+    "La opción seleccionada no es válida.": "La opción seleccionada no es válida.",
+    "La pregunta no pertenece a este punto.": "La pregunta no pertenece a este punto.",
+    "Debes responder el cuestionario.": "Debes responder el cuestionario."
 }

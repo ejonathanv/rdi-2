@@ -4,6 +4,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CheckpointQuestionController;
 use App\Http\Controllers\CheckpointQuestionnaireController;
+use App\Http\Controllers\CheckpointScanController;
 use App\Http\Controllers\CurrentAreaController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
@@ -15,6 +16,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
     Route::put('current-area', [CurrentAreaController::class, 'update'])->name('current-area.update');
+
+    Route::get('scan/{token}', [CheckpointScanController::class, 'show'])
+        ->name('checkpoints.scan.show');
+    Route::post('scan/{token}', [CheckpointScanController::class, 'store'])
+        ->name('checkpoints.scan.store');
+    Route::get('scan/{token}/completo', [CheckpointScanController::class, 'complete'])
+        ->name('checkpoints.scan.complete');
 
     Route::middleware('manage.areas')->group(function () {
         Route::resource('areas', AreaController::class)->except(['show']);

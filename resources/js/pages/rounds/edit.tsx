@@ -1,5 +1,5 @@
 import { Form, Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, QrCode, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import CheckpointController from '@/actions/App/Http/Controllers/CheckpointController';
 import RoundController from '@/actions/App/Http/Controllers/RoundController';
@@ -11,8 +11,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { downloadCheckpointQr } from '@/lib/download-checkpoint-qr';
 import { destroy as destroyCheckpoint } from '@/routes/checkpoints';
 import { edit as editQuestionnaire } from '@/routes/checkpoints/questionnaire';
+import { show as showScan } from '@/routes/checkpoints/scan';
 import { index as roundsIndex } from '@/routes/rounds';
 import { reorder } from '@/routes/rounds/checkpoints';
 
@@ -330,6 +332,24 @@ export default function RoundsEdit({
                                                 >
                                                     Configurar cuestionario
                                                 </Link>
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const path = showScan.url(
+                                                        checkpoint.token,
+                                                    );
+                                                    const url = `${window.location.origin}${path}`;
+                                                    void downloadCheckpointQr(
+                                                        url,
+                                                        checkpoint.name,
+                                                    );
+                                                }}
+                                            >
+                                                <QrCode className="size-4" />
+                                                Descargar QR
                                             </Button>
                                             <Button
                                                 type="button"

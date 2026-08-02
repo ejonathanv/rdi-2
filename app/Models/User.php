@@ -114,6 +114,21 @@ class User extends Authenticatable implements PasskeyUser
         return $this->areas()->where('areas.id', $area->id)->exists();
     }
 
+    public function canRespondToCheckpoint(Checkpoint $checkpoint): bool
+    {
+        $checkpoint->loadMissing('round.area');
+
+        $area = $checkpoint->round->area;
+
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $role = $this->roleIn($area);
+
+        return $role === AreaRole::Guard || $role === AreaRole::Admin;
+    }
+
     /**
      * Area IDs this user can manage (all areas if super-admin).
      *

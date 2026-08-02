@@ -93,18 +93,21 @@ tests/Feature/
 Siempre scoped por `area_id`:
 
 - **`rounds`**: recorridos de una planta (`title`, `instructions`, `is_active`)
-- **`checkpoints`**: puntos de revisión ordenados (`name`, `instructions`, `position`, `token` UUID para QR futuro)
+- **`checkpoints`**: puntos de revisión ordenados (`name`, `instructions`, `position`, `token` UUID para QR)
 - **`checkpoint_questions` / `checkpoint_question_options`**: cuestionario de opción múltiple por punto (configuración admin)
+- **`checkpoint_submissions` / `checkpoint_submission_answers`**: respuestas del guardia al escanear el QR
 
-Gestión: super-admin y admin de área, filtrada por el área activa del sidebar.
+Gestión admin: super-admin y admin de área, filtrada por el área activa del sidebar.
 
-Desde editar recorrido → **Configurar cuestionario** en cada punto.
+Desde editar recorrido → **Configurar cuestionario** / **Descargar QR** en cada punto.
+
+Escaneo: `GET/POST /scan/{token}` (usuario autenticado con rol `guard` o `admin` del área).
 
 ## Dominio futuro
 
-- Ejecución del cuestionario al escanear QR (vs reporte manual de incidencia)
-- `round_assignments`, `patrol_runs` / `checkpoint_logs`, `incidents`
-- Escaneo QR con el `token` del checkpoint
+- Reporte manual de incidencia (alternativa al cuestionario)
+- `round_assignments`, `patrol_runs` / reportes agregados por guardia
+- Notificaciones a contactos
 
 ---
 
@@ -131,7 +134,8 @@ Desde editar recorrido → **Configurar cuestionario** en cada punto.
 
 - Unique `(user_id, area_id)` en `area_user`.
 - `areas.code` único.
-- `checkpoints.token` único (preparado para QR).
+- `checkpoints.token` único (URL de escaneo `/scan/{token}`).
+- Respuestas de cuestionario en `checkpoint_submissions` ligadas a `user_id`.
 
 ### Git / PRs
 
@@ -151,3 +155,4 @@ Desde editar recorrido → **Configurar cuestionario** en cada punto.
 | 2026-07-31 | Commits en español | Consistencia con idioma del proyecto |
 | 2026-07-31 | Recorridos + puntos por área | Configuración antes de ejecución/cuestionarios |
 | 2026-08-02 | Cuestionario de opción múltiple por checkpoint | Prep. para reporte estructurado al escanear QR |
+| 2026-08-02 | QR (`qrcode` npm) + scan autenticado por token | Guardia responde; base para reportes por usuario |
