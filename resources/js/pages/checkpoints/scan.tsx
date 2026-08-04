@@ -51,6 +51,31 @@ export default function CheckpointScan({
 
     const allClearForm = useForm({});
 
+    if (patrol?.already_reviewed) {
+        return (
+            <>
+                <Head title={`Punto · ${checkpoint.name}`} />
+
+                <div className="mx-auto flex w-full max-w-lg flex-col gap-6 p-4">
+                    <Heading
+                        title={checkpoint.name}
+                        description={`${area.name} · ${round.title}`}
+                    />
+
+                    <p className="text-sm text-muted-foreground">
+                        Este punto ya fue revisado en el recorrido actual.
+                    </p>
+
+                    <Button asChild className="w-full">
+                        <Link href={showPatrol(patrol.id)}>
+                            Volver al recorrido
+                        </Link>
+                    </Button>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <Head title={`Punto · ${checkpoint.name}`} />
@@ -67,61 +92,7 @@ export default function CheckpointScan({
                     </p>
                 )}
 
-                {patrol?.already_reviewed ? (
-                    <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Este punto ya fue revisado en el recorrido actual.
-                        </p>
-                        {patrol && (
-                            <Button asChild className="w-full">
-                                <Link href={showPatrol(patrol.id)}>
-                                    Volver al recorrido
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                ) : questions.length === 0 ? (
-                    <div className="space-y-3">
-                        <p className="text-sm text-muted-foreground">
-                            Este punto no tiene cuestionario. Confirma el
-                            estado del área.
-                        </p>
-
-                        <Button
-                            type="button"
-                            className="w-full"
-                            disabled={allClearForm.processing || !patrol}
-                            onClick={() =>
-                                allClearForm.post(allClear.url(checkpoint.token))
-                            }
-                        >
-                            {allClearForm.processing && <Spinner />}
-                            Área sin novedad
-                        </Button>
-
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            disabled
-                        >
-                            Reportar incidencia
-                        </Button>
-                        <p className="text-center text-xs text-muted-foreground">
-                            Reportar incidencia — próximamente
-                        </p>
-
-                        <InputError message={allClearForm.errors.checkpoint} />
-                        <InputError message={allClearForm.errors.patrol} />
-
-                        {!patrol && (
-                            <p className="text-sm text-destructive">
-                                Debes iniciar un recorrido antes de marcar este
-                                punto.
-                            </p>
-                        )}
-                    </div>
-                ) : (
+                {questions.length > 0 && (
                     <form
                         className="space-y-6"
                         onSubmit={(event) => {
@@ -209,14 +180,56 @@ export default function CheckpointScan({
                             {form.processing && <Spinner />}
                             Enviar respuestas
                         </Button>
-
-                        {!patrol && (
-                            <p className="text-sm text-destructive">
-                                Debes iniciar un recorrido antes de responder.
-                            </p>
-                        )}
                     </form>
                 )}
+
+                <div className="space-y-3 border-t pt-4">
+                    {questions.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            Este punto no tiene cuestionario. Confirma el
+                            estado del área.
+                        </p>
+                    )}
+
+                    <Button
+                        type="button"
+                        className="w-full"
+                        variant={questions.length > 0 ? 'secondary' : 'default'}
+                        disabled={
+                            allClearForm.processing ||
+                            form.processing ||
+                            !patrol
+                        }
+                        onClick={() =>
+                            allClearForm.post(allClear.url(checkpoint.token))
+                        }
+                    >
+                        {allClearForm.processing && <Spinner />}
+                        Área sin novedad
+                    </Button>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled
+                    >
+                        Reportar incidencia
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">
+                        Reportar incidencia — próximamente
+                    </p>
+
+                    <InputError message={allClearForm.errors.checkpoint} />
+                    <InputError message={allClearForm.errors.patrol} />
+
+                    {!patrol && (
+                        <p className="text-sm text-destructive">
+                            Debes iniciar un recorrido antes de revisar este
+                            punto.
+                        </p>
+                    )}
+                </div>
             </div>
         </>
     );

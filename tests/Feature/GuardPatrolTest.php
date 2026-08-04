@@ -127,7 +127,7 @@ class GuardPatrolTest extends TestCase
         ]);
     }
 
-    public function test_cannot_all_clear_when_questions_exist(): void
+    public function test_all_clear_works_even_when_questions_exist(): void
     {
         [$guard, $round, $checkpoint] = $this->guardWithQuestionCheckpoint();
 
@@ -136,9 +136,14 @@ class GuardPatrolTest extends TestCase
 
         $this->actingAs($guard)
             ->withSession(['active_patrol_run_id' => $patrol->id])
-            ->from(route('checkpoints.scan.show', $checkpoint->token))
             ->post(route('checkpoints.scan.all-clear', $checkpoint->token))
-            ->assertSessionHasErrors('checkpoint');
+            ->assertRedirect(route('checkpoints.scan.complete', $checkpoint->token));
+
+        $this->assertDatabaseHas('patrol_checkpoint_visits', [
+            'patrol_run_id' => $patrol->id,
+            'checkpoint_id' => $checkpoint->id,
+            'outcome' => PatrolVisitOutcome::AllClear->value,
+        ]);
     }
 
     /**

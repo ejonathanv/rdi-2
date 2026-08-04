@@ -112,14 +112,6 @@ class CheckpointScanController extends Controller
         $checkpoint = $request->checkpoint();
         abort_unless($checkpoint->round->is_active, 404);
 
-        $hasQuestions = $checkpoint->questions()->where('is_active', true)->exists();
-
-        if ($hasQuestions) {
-            throw ValidationException::withMessages([
-                'checkpoint' => __('Este punto tiene cuestionario; debes responderlo.'),
-            ]);
-        }
-
         $patrol = $this->requireActivePatrol($request, $checkpoint);
 
         $this->visitRecorder->record(
