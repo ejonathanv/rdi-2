@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminRondinController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CheckpointQuestionController;
@@ -46,6 +47,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('areas', AreaController::class)->except(['show']);
         Route::resource('users', UserController::class)->except(['show']);
         Route::resource('rounds', RoundController::class)->except(['show']);
+
+        Route::get('rondines', [AdminRondinController::class, 'index'])->name('rondines.index');
+        Route::get('rondines/{round}', [AdminRondinController::class, 'showRound'])->name('rondines.rounds.show');
+        Route::get('rondines/{round}/patrullas/{patrol}', [AdminRondinController::class, 'showPatrol'])
+            ->name('rondines.patrols.show');
+        Route::get('rondines/{round}/patrullas/{patrol}/pdf', [AdminRondinController::class, 'downloadPdf'])
+            ->name('rondines.patrols.pdf');
 
         Route::post('rounds/{round}/checkpoints', [CheckpointController::class, 'store'])
             ->name('rounds.checkpoints.store');

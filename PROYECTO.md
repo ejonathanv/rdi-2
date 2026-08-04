@@ -110,10 +110,12 @@ Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de reco
 
 **`patrol_checkpoint_visit_photos`**: hasta 3 fotos opcionales por visita; se optimizan en el servidor (JPEG) y se guardan en el disco `public`.
 
+Consulta admin: pestaña **Rondines** — listado de recorridos del área → rondines realizados (estado, guardia, inicio/fin, duración) → detalle por punto (respuestas, fotos) y descarga PDF.
+
 ## Dominio futuro
 
 - Reporte de incidencia manual (alternativa a “área sin novedad” / cuestionario)
-- `round_assignments` / reportes agregados y dashboard de tiempos
+- `round_assignments` / reportes agregados
 - Notificaciones a contactos
 - Abandonar patrulla a mitad
 
