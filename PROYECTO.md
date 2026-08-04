@@ -108,6 +108,8 @@ Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de reco
 
 **`patrol_runs` / `patrol_checkpoint_visits`**: recorrido en curso o finalizado del guardia (`started_at`, `finished_at`, visitas por punto con cuestionario o “área sin novedad”). Escáner QR in-app valida presencia antes de abrir el punto.
 
+**`patrol_checkpoint_visit_photos`**: hasta 3 fotos opcionales por visita; se optimizan en el servidor (JPEG) y se guardan en el disco `public`.
+
 ## Dominio futuro
 
 - Reporte de incidencia manual (alternativa a “área sin novedad” / cuestionario)

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -65,5 +66,13 @@ class PatrolCheckpointVisit extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(CheckpointSubmission::class, 'checkpoint_submission_id');
+    }
+
+    /**
+     * @return HasMany<PatrolCheckpointVisitPhoto, $this>
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PatrolCheckpointVisitPhoto::class)->orderBy('position');
     }
 }

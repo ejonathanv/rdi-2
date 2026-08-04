@@ -26,6 +26,8 @@ class StoreCheckpointScanRequest extends FormRequest
         return [
             'answers' => ['required', 'array'],
             'answers.*' => ['required', 'integer'],
+            'photos' => ['nullable', 'array', 'max:3'],
+            'photos.*' => ['required', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
         ];
     }
 
@@ -85,6 +87,22 @@ class StoreCheckpointScanRequest extends FormRequest
     {
         return [
             'answers.required' => __('Debes responder el cuestionario.'),
+            'photos.max' => __('Puedes adjuntar máximo :max fotos.'),
+            'photos.*.image' => __('Cada archivo debe ser una imagen.'),
+            'photos.*.mimes' => __('Las fotos deben ser JPEG, PNG o WebP.'),
+            'photos.*.max' => __('Cada foto no puede superar los 10 MB.'),
+            'photos.*.uploaded' => __('No se pudo subir la foto. Prueba con una imagen más pequeña.'),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'photos' => __('fotos'),
+            'photos.*' => __('foto'),
         ];
     }
 

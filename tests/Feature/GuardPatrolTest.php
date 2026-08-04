@@ -13,6 +13,8 @@ use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class GuardPatrolTest extends TestCase
@@ -143,6 +145,90 @@ class GuardPatrolTest extends TestCase
             'patrol_run_id' => $patrol->id,
             'checkpoint_id' => $checkpoint->id,
             'outcome' => PatrolVisitOutcome::AllClear->value,
+        ]);
+    }
+
+    public function test_questionnaire_can_attach_optimized_photos(): void
+    {
+        Storage::fake('public');
+
+        [$guard, $round, $checkpoint, $question, $option] = $this->guardWithQuestionCheckpoint();
+
+        $this->actingAs($guard)->post(route('guard.rounds.start', $round));
+        $patrol = PatrolRun::query()->firstOrFail();
+
+        $this->actingAs($guard)
+            ->withSession(['active_patrol_run_id' => $patrol->id])
+            ->post(route('checkpoints.scan.store', $checkpoint->token), [
+                'answers' => [$question->id => $option->id],
+                'photos' => [
+                    UploadedFile::fake()->image('entrada.jpg', 2400, 1800),
+                    UploadedFile::fake()->image('pasillo.png', 800, 600),
+                ],
+            ])
+            ->assertRedirect(route('checkpoints.scan.complete', $checkpoint->token));
+
+        $visit = $patrol->visits()->where('checkpoint_id', $checkpoint->id)->firstOrFail();
+
+        $this->assertCount(2, $visit->photos);
+        $this->assertSame(1, $visit->photos[0]->position);
+        $this->assertSame(2, $visit->photos[1]->position);
+
+        foreach ($visit->photos as $photo) {
+            Storage::disk('public')->assertExists($photo->path);
+            $this->assertStringEndsWith('.jpg', $photo->path);
+        }
+    }
+
+    public function test_all_clear_can_attach_a_photo(): void
+    {
+        Storage::fake('public');
+
+        [$guard, $round, $checkpoint] = $this->guardWithCheckpoint();
+
+        $this->actingAs($guard)->post(route('guard.rounds.start', $round));
+        $patrol = PatrolRun::query()->firstOrFail();
+
+        $this->actingAs($guard)
+            ->withSession(['active_patrol_run_id' => $patrol->id])
+            ->post(route('checkpoints.scan.all-clear', $checkpoint->token), [
+                'photos' => [
+                    UploadedFile::fake()->image('sin-novedad.jpg', 1200, 900),
+                ],
+            ])
+            ->assertRedirect(route('checkpoints.scan.complete', $checkpoint->token));
+
+        $visit = $patrol->visits()->where('checkpoint_id', $checkpoint->id)->firstOrFail();
+
+        $this->assertCount(1, $visit->photos);
+        Storage::disk('public')->assertExists($visit->photos->first()->path);
+    }
+
+    public function test_cannot_attach_more_than_three_photos(): void
+    {
+        Storage::fake('public');
+
+        [$guard, $round, $checkpoint] = $this->guardWithCheckpoint();
+
+        $this->actingAs($guard)->post(route('guard.rounds.start', $round));
+        $patrol = PatrolRun::query()->firstOrFail();
+
+        $this->actingAs($guard)
+            ->withSession(['active_patrol_run_id' => $patrol->id])
+            ->from(route('checkpoints.scan.show', $checkpoint->token))
+            ->post(route('checkpoints.scan.all-clear', $checkpoint->token), [
+                'photos' => [
+                    UploadedFile::fake()->image('1.jpg'),
+                    UploadedFile::fake()->image('2.jpg'),
+                    UploadedFile::fake()->image('3.jpg'),
+                    UploadedFile::fake()->image('4.jpg'),
+                ],
+            ])
+            ->assertSessionHasErrors('photos');
+
+        $this->assertDatabaseMissing('patrol_checkpoint_visits', [
+            'patrol_run_id' => $patrol->id,
+            'checkpoint_id' => $checkpoint->id,
         ]);
     }
 

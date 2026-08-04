@@ -8,9 +8,11 @@ use App\Http\Requests\CheckpointScan\StoreCheckpointScanRequest;
 use App\Models\Checkpoint;
 use App\Models\CheckpointSubmission;
 use App\Models\PatrolRun;
+use App\Services\CheckpointVisitPhotoStore;
 use App\Services\PatrolVisitRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -18,7 +20,10 @@ use Inertia\Response;
 
 class CheckpointScanController extends Controller
 {
-    public function __construct(private PatrolVisitRecorder $visitRecorder) {}
+    public function __construct(
+        private PatrolVisitRecorder $visitRecorder,
+        private CheckpointVisitPhotoStore $photoStore,
+    ) {}
 
     public function show(Request $request, string $token): Response
     {
@@ -89,12 +94,14 @@ class CheckpointScanController extends Controller
                 ]);
             }
 
-            $this->visitRecorder->record(
+            $visit = $this->visitRecorder->record(
                 $patrol,
                 $checkpoint,
                 PatrolVisitOutcome::Questionnaire,
                 $submission,
             );
+
+            $this->photoStore->store($visit, $this->uploadedPhotos($request));
         });
 
         $request->session()->forget('patrol_verified_checkpoint_id');
@@ -114,11 +121,15 @@ class CheckpointScanController extends Controller
 
         $patrol = $this->requireActivePatrol($request, $checkpoint);
 
-        $this->visitRecorder->record(
-            $patrol,
-            $checkpoint,
-            PatrolVisitOutcome::AllClear,
-        );
+        DB::transaction(function () use ($request, $checkpoint, $patrol): void {
+            $visit = $this->visitRecorder->record(
+                $patrol,
+                $checkpoint,
+                PatrolVisitOutcome::AllClear,
+            );
+
+            $this->photoStore->store($visit, $this->uploadedPhotos($request));
+        });
 
         $request->session()->forget('patrol_verified_checkpoint_id');
 
@@ -197,5 +208,19 @@ class CheckpointScanController extends Controller
         }
 
         return $patrol;
+    }
+
+    /**
+     * @return list<UploadedFile>
+     */
+    private function uploadedPhotos(Request $request): array
+    {
+        $photos = $request->file('photos', []);
+
+        if (! is_array($photos)) {
+            return $photos ? [$photos] : [];
+        }
+
+        return array_values(array_filter($photos));
     }
 }

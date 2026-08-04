@@ -1,8 +1,10 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import {
     allClear,
     store,
 } from '@/actions/App/Http/Controllers/CheckpointScanController';
+import CheckpointPhotoPicker from '@/components/checkpoint-photo-picker';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -41,15 +43,54 @@ export default function CheckpointScan({
     questions: QuestionRow[];
     patrol: { id: number; already_reviewed: boolean } | null;
 }) {
+    const [photos, setPhotos] = useState<File[]>([]);
+
     const form = useForm<{
         answers: Record<string, number | null>;
+        photos: File[];
     }>({
         answers: Object.fromEntries(
             questions.map((question) => [String(question.id), null]),
         ),
+        photos: [],
     });
 
-    const allClearForm = useForm({});
+    const allClearForm = useForm<{ photos: File[] }>({
+        photos: [],
+    });
+
+    const busy = form.processing || allClearForm.processing;
+
+    const photoErrors = {
+        ...Object.fromEntries(
+            Object.entries(form.errors).filter(([key]) =>
+                key.startsWith('photos'),
+            ),
+        ),
+        ...Object.fromEntries(
+            Object.entries(allClearForm.errors).filter(([key]) =>
+                key.startsWith('photos'),
+            ),
+        ),
+    };
+
+    const submitQuestionnaire = () => {
+        form.transform((data) => ({
+            ...data,
+            photos,
+        }));
+        form.post(store.url(checkpoint.token), {
+            forceFormData: true,
+            preserveScroll: true,
+        });
+    };
+
+    const submitAllClear = () => {
+        allClearForm.transform(() => ({ photos }));
+        allClearForm.post(allClear.url(checkpoint.token), {
+            forceFormData: true,
+        });
+    };
 
     if (patrol?.already_reviewed) {
         return (
@@ -93,15 +134,7 @@ export default function CheckpointScan({
                 )}
 
                 {questions.length > 0 && (
-                    <form
-                        className="space-y-6"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            form.post(store.url(checkpoint.token), {
-                                preserveScroll: true,
-                            });
-                        }}
-                    >
+                    <div className="space-y-6">
                         {questions.map((question) => (
                             <fieldset
                                 key={question.id}
@@ -171,19 +204,17 @@ export default function CheckpointScan({
 
                         <InputError message={form.errors.answers} />
                         <InputError message={form.errors.patrol} />
-
-                        <Button
-                            type="submit"
-                            className="w-full"
-                            disabled={form.processing || !patrol}
-                        >
-                            {form.processing && <Spinner />}
-                            Enviar respuestas
-                        </Button>
-                    </form>
+                    </div>
                 )}
 
                 <div className="space-y-3 border-t pt-4">
+                    <CheckpointPhotoPicker
+                        photos={photos}
+                        onChange={setPhotos}
+                        errors={photoErrors}
+                        disabled={busy || !patrol}
+                    />
+
                     {questions.length === 0 && (
                         <p className="text-sm text-muted-foreground">
                             Este punto no tiene cuestionario. Confirma el
@@ -191,18 +222,24 @@ export default function CheckpointScan({
                         </p>
                     )}
 
+                    {questions.length > 0 && (
+                        <Button
+                            type="button"
+                            className="w-full"
+                            disabled={busy || !patrol}
+                            onClick={submitQuestionnaire}
+                        >
+                            {form.processing && <Spinner />}
+                            Enviar respuestas
+                        </Button>
+                    )}
+
                     <Button
                         type="button"
                         className="w-full"
                         variant={questions.length > 0 ? 'secondary' : 'default'}
-                        disabled={
-                            allClearForm.processing ||
-                            form.processing ||
-                            !patrol
-                        }
-                        onClick={() =>
-                            allClearForm.post(allClear.url(checkpoint.token))
-                        }
+                        disabled={busy || !patrol}
+                        onClick={submitAllClear}
                     >
                         {allClearForm.processing && <Spinner />}
                         Área sin novedad
