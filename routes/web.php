@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckpointScanController;
 use App\Http\Controllers\CurrentAreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuardHomeController;
+use App\Http\Controllers\GuardPatrolController;
 use App\Http\Controllers\GuardRoundController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
@@ -22,12 +23,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('guardia', GuardHomeController::class)->name('guard.home');
     Route::get('guardia/recorridos', [GuardRoundController::class, 'index'])->name('guard.rounds.index');
-    Route::get('guardia/recorridos/{round}', [GuardRoundController::class, 'show'])->name('guard.rounds.show');
+    Route::match(['get', 'post'], 'guardia/recorridos/{round}/iniciar', [GuardPatrolController::class, 'start'])
+        ->name('guard.rounds.start');
+    // Compatibilidad: el listado antiguo hacía GET a /guardia/recorridos/{round}
+    Route::get('guardia/recorridos/{round}', [GuardPatrolController::class, 'start'])
+        ->name('guard.rounds.show');
+    Route::get('guardia/patrullas/{patrol}', [GuardPatrolController::class, 'show'])
+        ->name('guard.patrols.show');
+    Route::post('guardia/patrullas/{patrol}/puntos/{checkpoint}/verificar', [GuardPatrolController::class, 'verifyCheckpoint'])
+        ->name('guard.patrols.verify-checkpoint');
 
     Route::get('scan/{token}', [CheckpointScanController::class, 'show'])
         ->name('checkpoints.scan.show');
     Route::post('scan/{token}', [CheckpointScanController::class, 'store'])
         ->name('checkpoints.scan.store');
+    Route::post('scan/{token}/sin-novedad', [CheckpointScanController::class, 'allClear'])
+        ->name('checkpoints.scan.all-clear');
     Route::get('scan/{token}/completo', [CheckpointScanController::class, 'complete'])
         ->name('checkpoints.scan.complete');
 

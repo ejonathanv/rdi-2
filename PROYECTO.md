@@ -106,12 +106,14 @@ Escaneo: `GET/POST /scan/{token}` (usuario autenticado con rol `guard` o `admin`
 
 Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de recorridos activos en áreas con rol **`guard`**.
 
+**`patrol_runs` / `patrol_checkpoint_visits`**: recorrido en curso o finalizado del guardia (`started_at`, `finished_at`, visitas por punto con cuestionario o “área sin novedad”). Escáner QR in-app valida presencia antes de abrir el punto.
+
 ## Dominio futuro
 
-- Persistencia de `patrol_runs` al iniciar un recorrido
-- Reporte manual de incidencia (alternativa al cuestionario)
-- `round_assignments` / reportes agregados por guardia
+- Reporte de incidencia manual (alternativa a “área sin novedad” / cuestionario)
+- `round_assignments` / reportes agregados y dashboard de tiempos
 - Notificaciones a contactos
+- Abandonar patrulla a mitad
 
 ---
 
@@ -161,3 +163,4 @@ Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de reco
 | 2026-08-02 | Cuestionario de opción múltiple por checkpoint | Prep. para reporte estructurado al escanear QR |
 | 2026-08-02 | QR (`qrcode` npm) + scan autenticado por token | Guardia responde; base para reportes por usuario |
 | 2026-08-02 | Panel de acciones del guardia post-login | Separar UX operativa del dashboard de admin |
+| 2026-08-04 | Patrol runs + visitas + escáner QR | Tiempos de recorrido y prueba de presencia |

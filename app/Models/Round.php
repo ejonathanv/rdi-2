@@ -50,4 +50,12 @@ class Round extends Model
     {
         return $this->hasMany(Checkpoint::class)->orderBy('position');
     }
+
+    /**
+     * @return HasMany<PatrolRun, $this>
+     */
+    public function patrolRuns(): HasMany
+    {
+        return $this->hasMany(PatrolRun::class);
+    }
 }

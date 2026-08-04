@@ -70,6 +70,10 @@ class CheckpointScanTest extends TestCase
         [$guard, $checkpoint, $question, $optionYes, $optionNo] = $this->guardWithQuestion();
 
         $this->actingAs($guard)
+            ->post(route('guard.rounds.start', $checkpoint->round))
+            ->assertRedirect();
+
+        $this->actingAs($guard)
             ->post(route('checkpoints.scan.store', $checkpoint->token), [
                 'answers' => [
                     $question->id => $optionYes->id,
@@ -98,6 +102,8 @@ class CheckpointScanTest extends TestCase
     {
         [$guard, $checkpoint, $question] = $this->guardWithQuestion();
 
+        $this->actingAs($guard)->post(route('guard.rounds.start', $checkpoint->round));
+
         $this->actingAs($guard)
             ->from(route('checkpoints.scan.show', $checkpoint->token))
             ->post(route('checkpoints.scan.store', $checkpoint->token), [
@@ -114,6 +120,8 @@ class CheckpointScanTest extends TestCase
     {
         [$guard, $checkpoint] = $this->guardWithQuestion();
 
+        $this->actingAs($guard)->post(route('guard.rounds.start', $checkpoint->round));
+
         $this->actingAs($guard)
             ->from(route('checkpoints.scan.show', $checkpoint->token))
             ->post(route('checkpoints.scan.store', $checkpoint->token), [
@@ -122,6 +130,20 @@ class CheckpointScanTest extends TestCase
             ->assertSessionHasErrors('answers');
 
         $this->assertDatabaseCount('checkpoint_submissions', 0);
+    }
+
+    public function test_submit_without_active_patrol_is_rejected(): void
+    {
+        [$guard, $checkpoint, $question, $optionYes] = $this->guardWithQuestion();
+
+        $this->actingAs($guard)
+            ->from(route('checkpoints.scan.show', $checkpoint->token))
+            ->post(route('checkpoints.scan.store', $checkpoint->token), [
+                'answers' => [
+                    $question->id => $optionYes->id,
+                ],
+            ])
+            ->assertSessionHasErrors('patrol');
     }
 
     /**

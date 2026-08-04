@@ -28,5 +28,13 @@
     "Debes responder todas las preguntas.": "Debes responder todas las preguntas.",
     "La opción seleccionada no es válida.": "La opción seleccionada no es válida.",
     "La pregunta no pertenece a este punto.": "La pregunta no pertenece a este punto.",
-    "Debes responder el cuestionario.": "Debes responder el cuestionario."
+    "Debes responder el cuestionario.": "Debes responder el cuestionario.",
+    "Recorrido iniciado.": "Recorrido iniciado.",
+    "Reanudaste el recorrido en curso.": "Reanudaste el recorrido en curso.",
+    "Ya tienes un recorrido en curso. Termínalo antes de iniciar otro.": "Ya tienes un recorrido en curso. Termínalo antes de iniciar otro.",
+    "El QR no corresponde a este punto de revisión.": "El QR no corresponde a este punto de revisión.",
+    "Este punto ya fue revisado en el recorrido actual.": "Este punto ya fue revisado en el recorrido actual.",
+    "Debes iniciar un recorrido antes de revisar este punto.": "Debes iniciar un recorrido antes de revisar este punto.",
+    "Este punto tiene cuestionario; debes responderlo.": "Este punto tiene cuestionario; debes responderlo.",
+    "Punto marcado como área sin novedad.": "Punto marcado como área sin novedad."
 }

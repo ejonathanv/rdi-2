@@ -14,10 +14,11 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $checkpoint_id
  * @property int $user_id
+ * @property int|null $patrol_run_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['checkpoint_id', 'user_id'])]
+#[Fillable(['checkpoint_id', 'user_id', 'patrol_run_id'])]
 class CheckpointSubmission extends Model
 {
     /** @use HasFactory<CheckpointSubmissionFactory> */
@@ -37,6 +38,14 @@ class CheckpointSubmission extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<PatrolRun, $this>
+     */
+    public function patrolRun(): BelongsTo
+    {
+        return $this->belongsTo(PatrolRun::class);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AreaRole;
 use App\Models\Area;
 use App\Models\Checkpoint;
+use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -125,7 +126,7 @@ class GuardHomeTest extends TestCase
                 ->where('rounds.0.id', $round->id));
     }
 
-    public function test_guard_can_view_round_detail(): void
+    public function test_guard_can_start_patrol_for_round_detail(): void
     {
         $area = Area::factory()->create();
         $guard = User::factory()->create();
@@ -141,17 +142,24 @@ class GuardHomeTest extends TestCase
             'is_active' => true,
         ]);
 
+        $response = $this->actingAs($guard)
+            ->post(route('guard.rounds.start', $round));
+
+        $patrol = PatrolRun::query()->firstOrFail();
+
+        $response->assertRedirect(route('guard.patrols.show', $patrol));
+
         $this->actingAs($guard)
-            ->get(route('guard.rounds.show', $round))
+            ->get(route('guard.patrols.show', $patrol))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('guard/rounds/show')
-                ->where('round.id', $round->id)
-                ->has('round.checkpoints', 1)
-                ->where('round.checkpoints.0.name', 'Entrada'));
+                ->component('guard/patrols/show')
+                ->where('patrol.round.id', $round->id)
+                ->has('patrol.checkpoints', 1)
+                ->where('patrol.checkpoints.0.name', 'Entrada'));
     }
 
-    public function test_guard_cannot_view_round_from_another_area(): void
+    public function test_guard_cannot_start_round_from_another_area(): void
     {
         $area = Area::factory()->create();
         $otherArea = Area::factory()->create();
@@ -164,7 +172,7 @@ class GuardHomeTest extends TestCase
         ]);
 
         $this->actingAs($guard)
-            ->get(route('guard.rounds.show', $round))
+            ->post(route('guard.rounds.start', $round))
             ->assertForbidden();
     }
 

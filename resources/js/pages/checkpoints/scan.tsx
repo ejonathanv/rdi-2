@@ -1,10 +1,14 @@
-import { Head, useForm } from '@inertiajs/react';
-import { store } from '@/actions/App/Http/Controllers/CheckpointScanController';
+import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    allClear,
+    store,
+} from '@/actions/App/Http/Controllers/CheckpointScanController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { show as showPatrol } from '@/routes/guard/patrols';
 
 type OptionRow = {
     id: number;
@@ -24,6 +28,7 @@ export default function CheckpointScan({
     round,
     checkpoint,
     questions,
+    patrol,
 }: {
     area: { id: number; name: string; code: string };
     round: { id: number; title: string };
@@ -34,6 +39,7 @@ export default function CheckpointScan({
         token: string;
     };
     questions: QuestionRow[];
+    patrol: { id: number; already_reviewed: boolean } | null;
 }) {
     const form = useForm<{
         answers: Record<string, number | null>;
@@ -42,6 +48,8 @@ export default function CheckpointScan({
             questions.map((question) => [String(question.id), null]),
         ),
     });
+
+    const allClearForm = useForm({});
 
     return (
         <>
@@ -59,11 +67,60 @@ export default function CheckpointScan({
                     </p>
                 )}
 
-                {questions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        Este punto aún no tiene preguntas activas en el
-                        cuestionario.
-                    </p>
+                {patrol?.already_reviewed ? (
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Este punto ya fue revisado en el recorrido actual.
+                        </p>
+                        {patrol && (
+                            <Button asChild className="w-full">
+                                <Link href={showPatrol(patrol.id)}>
+                                    Volver al recorrido
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                ) : questions.length === 0 ? (
+                    <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            Este punto no tiene cuestionario. Confirma el
+                            estado del área.
+                        </p>
+
+                        <Button
+                            type="button"
+                            className="w-full"
+                            disabled={allClearForm.processing || !patrol}
+                            onClick={() =>
+                                allClearForm.post(allClear.url(checkpoint.token))
+                            }
+                        >
+                            {allClearForm.processing && <Spinner />}
+                            Área sin novedad
+                        </Button>
+
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            disabled
+                        >
+                            Reportar incidencia
+                        </Button>
+                        <p className="text-center text-xs text-muted-foreground">
+                            Reportar incidencia — próximamente
+                        </p>
+
+                        <InputError message={allClearForm.errors.checkpoint} />
+                        <InputError message={allClearForm.errors.patrol} />
+
+                        {!patrol && (
+                            <p className="text-sm text-destructive">
+                                Debes iniciar un recorrido antes de marcar este
+                                punto.
+                            </p>
+                        )}
+                    </div>
                 ) : (
                     <form
                         className="space-y-6"
@@ -142,15 +199,22 @@ export default function CheckpointScan({
                         ))}
 
                         <InputError message={form.errors.answers} />
+                        <InputError message={form.errors.patrol} />
 
                         <Button
                             type="submit"
                             className="w-full"
-                            disabled={form.processing}
+                            disabled={form.processing || !patrol}
                         >
                             {form.processing && <Spinner />}
                             Enviar respuestas
                         </Button>
+
+                        {!patrol && (
+                            <p className="text-sm text-destructive">
+                                Debes iniciar un recorrido antes de responder.
+                            </p>
+                        )}
                     </form>
                 )}
             </div>
