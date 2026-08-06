@@ -7,6 +7,7 @@ import {
 import CheckpointPhotoPicker from '@/components/checkpoint-photo-picker';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import UrgentReviewFields from '@/components/urgent-review-fields';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
@@ -44,19 +45,31 @@ export default function CheckpointScan({
     patrol: { id: number; already_reviewed: boolean } | null;
 }) {
     const [photos, setPhotos] = useState<File[]>([]);
+    const [isUrgent, setIsUrgent] = useState(false);
+    const [urgentNotes, setUrgentNotes] = useState('');
 
     const form = useForm<{
         answers: Record<string, number | null>;
         photos: File[];
+        is_urgent: boolean;
+        urgent_notes: string;
     }>({
         answers: Object.fromEntries(
             questions.map((question) => [String(question.id), null]),
         ),
         photos: [],
+        is_urgent: false,
+        urgent_notes: '',
     });
 
-    const allClearForm = useForm<{ photos: File[] }>({
+    const allClearForm = useForm<{
+        photos: File[];
+        is_urgent: boolean;
+        urgent_notes: string;
+    }>({
         photos: [],
+        is_urgent: false,
+        urgent_notes: '',
     });
 
     const busy = form.processing || allClearForm.processing;
@@ -74,10 +87,25 @@ export default function CheckpointScan({
         ),
     };
 
+    const urgentErrors = {
+        ...Object.fromEntries(
+            Object.entries(form.errors).filter(([key]) =>
+                key.startsWith('urgent') || key === 'is_urgent',
+            ),
+        ),
+        ...Object.fromEntries(
+            Object.entries(allClearForm.errors).filter(([key]) =>
+                key.startsWith('urgent') || key === 'is_urgent',
+            ),
+        ),
+    };
+
     const submitQuestionnaire = () => {
         form.transform((data) => ({
             ...data,
             photos,
+            is_urgent: isUrgent,
+            urgent_notes: isUrgent ? urgentNotes : '',
         }));
         form.post(store.url(checkpoint.token), {
             forceFormData: true,
@@ -86,7 +114,11 @@ export default function CheckpointScan({
     };
 
     const submitAllClear = () => {
-        allClearForm.transform(() => ({ photos }));
+        allClearForm.transform(() => ({
+            photos,
+            is_urgent: isUrgent,
+            urgent_notes: isUrgent ? urgentNotes : '',
+        }));
         allClearForm.post(allClear.url(checkpoint.token), {
             forceFormData: true,
         });
@@ -212,6 +244,15 @@ export default function CheckpointScan({
                         photos={photos}
                         onChange={setPhotos}
                         errors={photoErrors}
+                        disabled={busy || !patrol}
+                    />
+
+                    <UrgentReviewFields
+                        isUrgent={isUrgent}
+                        urgentNotes={urgentNotes}
+                        onUrgentChange={setIsUrgent}
+                        onNotesChange={setUrgentNotes}
+                        errors={urgentErrors}
                         disabled={busy || !patrol}
                     />
 

@@ -58,6 +58,9 @@ class UserController extends Controller
                 'name' => $request->validated('name'),
                 'email' => $request->validated('email'),
                 'password' => $request->validated('password'),
+                'phone' => $request->validated('phone'),
+                'notify_via_whatsapp' => $request->boolean('notify_via_whatsapp', true),
+                'notify_via_sms' => $request->boolean('notify_via_sms', false),
                 'is_super_admin' => $request->user()->isSuperAdmin()
                     ? $request->boolean('is_super_admin')
                     : false,
@@ -92,6 +95,9 @@ class UserController extends Controller
             $data = [
                 'name' => $request->validated('name'),
                 'email' => $request->validated('email'),
+                'phone' => $request->validated('phone'),
+                'notify_via_whatsapp' => $request->boolean('notify_via_whatsapp', true),
+                'notify_via_sms' => $request->boolean('notify_via_sms', false),
             ];
 
             if ($request->filled('password')) {
@@ -182,6 +188,9 @@ class UserController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
+            'notify_via_whatsapp' => $user->notify_via_whatsapp,
+            'notify_via_sms' => $user->notify_via_sms,
             'is_super_admin' => $user->isSuperAdmin(),
             'memberships' => $user->areas->map(fn (Area $area) => [
                 'area_id' => $area->id,

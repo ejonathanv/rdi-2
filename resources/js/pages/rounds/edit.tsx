@@ -42,12 +42,23 @@ type RoundData = {
     checkpoints: CheckpointRow[];
 };
 
+type ContactOption = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+};
+
 export default function RoundsEdit({
     area,
     round,
+    availableContacts,
+    assignedContactIds,
 }: {
     area: AreaSummary;
     round: RoundData;
+    availableContacts: ContactOption[];
+    assignedContactIds: number[];
 }) {
     const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -139,6 +150,52 @@ export default function RoundsEdit({
                                     defaultChecked={round.is_active}
                                 />
                                 <Label htmlFor="is_active">Activo</Label>
+                            </div>
+
+                            <div className="space-y-3 rounded-xl border p-4">
+                                <Heading
+                                    variant="small"
+                                    title="Contactos asignados"
+                                    description="Reciben alertas de puntos urgentes en este recorrido"
+                                />
+
+                                {availableContacts.length === 0 && (
+                                    <p className="text-sm text-muted-foreground">
+                                        No hay contactos en esta área. Crea un
+                                        usuario con rol Contacto.
+                                    </p>
+                                )}
+
+                                {availableContacts.map((contact) => (
+                                    <div
+                                        key={contact.id}
+                                        className="flex items-start gap-3"
+                                    >
+                                        <Checkbox
+                                            id={`contact-${contact.id}`}
+                                            name="contact_ids[]"
+                                            value={String(contact.id)}
+                                            defaultChecked={assignedContactIds.includes(
+                                                contact.id,
+                                            )}
+                                        />
+                                        <div>
+                                            <Label
+                                                htmlFor={`contact-${contact.id}`}
+                                            >
+                                                {contact.name}
+                                            </Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                {contact.email}
+                                                {contact.phone
+                                                    ? ` · ${contact.phone}`
+                                                    : ' · Sin teléfono'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <InputError message={errors.contact_ids} />
                             </div>
 
                             <div className="flex gap-3">

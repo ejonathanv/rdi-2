@@ -17,7 +17,8 @@ use Illuminate\Support\Carbon;
  * @property int $checkpoint_id
  * @property Carbon $reviewed_at
  * @property PatrolVisitOutcome $outcome
- * @property int|null $checkpoint_submission_id
+ * @property bool $is_urgent
+ * @property string|null $urgent_notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
     'checkpoint_id',
     'reviewed_at',
     'outcome',
+    'is_urgent',
+    'urgent_notes',
     'checkpoint_submission_id',
 ])]
 class PatrolCheckpointVisit extends Model
@@ -41,6 +44,7 @@ class PatrolCheckpointVisit extends Model
         return [
             'reviewed_at' => 'datetime',
             'outcome' => PatrolVisitOutcome::class,
+            'is_urgent' => 'boolean',
         ];
     }
 

@@ -41,10 +41,17 @@
             <strong>{{ $checkpoint['position'] }}. {{ $checkpoint['name'] }}</strong>
             @if ($checkpoint['visited'])
                 <span class="badge">{{ $checkpoint['outcome_label'] }}</span>
+                @if ($checkpoint['is_urgent'])
+                    <span class="badge" style="border-color:#b91c1c;color:#b91c1c;">Urgente</span>
+                @endif
                 <div class="muted">
                     Revisado:
                     {{ \Illuminate\Support\Carbon::parse($checkpoint['reviewed_at'])->timezone(config('app.timezone'))->format('d/m/Y H:i:s') }}
                 </div>
+
+                @if ($checkpoint['is_urgent'] && $checkpoint['urgent_notes'])
+                    <p><strong>Notas urgentes:</strong> {{ $checkpoint['urgent_notes'] }}</p>
+                @endif
 
                 @if (count($checkpoint['answers']) > 0)
                     <ul>

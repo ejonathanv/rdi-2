@@ -78,6 +78,8 @@ class PatrolReportBuilder
                 'reviewed_at' => $visit?->reviewed_at?->toIso8601String(),
                 'outcome' => $visit?->outcome?->value,
                 'outcome_label' => $visit?->outcome?->label(),
+                'is_urgent' => (bool) ($visit?->is_urgent ?? false),
+                'urgent_notes' => $visit?->urgent_notes,
                 'answers' => $answers,
                 'photos' => $photos,
             ];

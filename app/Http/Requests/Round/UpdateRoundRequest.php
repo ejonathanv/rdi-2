@@ -5,6 +5,7 @@ namespace App\Http\Requests\Round;
 use App\Models\Round;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateRoundRequest extends FormRequest
 {
@@ -25,6 +26,8 @@ class UpdateRoundRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
+            'contact_ids' => ['nullable', 'array'],
+            'contact_ids.*' => ['integer', Rule::exists('users', 'id')],
         ];
     }
 }

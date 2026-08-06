@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Concerns\ContactNotificationRules;
 use App\Concerns\PasswordValidationRules;
 use App\Enums\AreaRole;
 use App\Models\User;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Validator;
 
 class StoreUserRequest extends FormRequest
 {
-    use PasswordValidationRules;
+    use ContactNotificationRules, PasswordValidationRules;
 
     public function authorize(): bool
     {
@@ -32,6 +33,7 @@ class StoreUserRequest extends FormRequest
             'memberships' => ['present', 'array'],
             'memberships.*.area_id' => ['required', 'integer', Rule::exists('areas', 'id')],
             'memberships.*.role' => ['required', Rule::enum(AreaRole::class)],
+            ...$this->contactNotificationRules(),
         ];
     }
 
@@ -70,6 +72,8 @@ class StoreUserRequest extends FormRequest
                     );
                 }
             }
+
+            $this->validateContactNotification($validator);
         });
     }
 }

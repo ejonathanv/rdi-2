@@ -33,6 +33,8 @@ type CheckpointRow = {
     reviewed_at: string | null;
     outcome: string | null;
     outcome_label: string | null;
+    is_urgent: boolean;
+    urgent_notes: string | null;
     answers: AnswerRow[];
     photos: PhotoRow[];
 };
@@ -154,6 +156,11 @@ export default function RondinesPatrol({
                                 ) : (
                                     <Badge variant="secondary">Pendiente</Badge>
                                 )}
+                                {checkpoint.is_urgent && (
+                                    <Badge variant="destructive">
+                                        Urgente
+                                    </Badge>
+                                )}
                             </div>
 
                             {checkpoint.visited && (
@@ -162,6 +169,16 @@ export default function RondinesPatrol({
                                         Revisado:{' '}
                                         {formatDateTime(checkpoint.reviewed_at)}
                                     </p>
+
+                                    {checkpoint.is_urgent &&
+                                        checkpoint.urgent_notes && (
+                                            <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                                                <span className="font-medium">
+                                                    Notas urgentes:{' '}
+                                                </span>
+                                                {checkpoint.urgent_notes}
+                                            </p>
+                                        )}
 
                                     {checkpoint.answers.length > 0 && (
                                         <ul className="space-y-2 text-sm">

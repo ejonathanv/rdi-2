@@ -39,6 +39,9 @@ class DatabaseSeeder extends Seeder
         $contact = User::factory()->create([
             'name' => 'Demo Contact',
             'email' => 'contact@example.com',
+            'phone' => '5512345678',
+            'notify_via_whatsapp' => true,
+            'notify_via_sms' => false,
         ]);
 
         $admin->areas()->attach($area->id, ['role' => AreaRole::Admin->value]);
@@ -75,6 +78,8 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ],
         ]);
+
+        $round->contacts()->attach($contact->id);
 
         $almacen = $checkpoints->firstWhere('name', 'Almacén');
 

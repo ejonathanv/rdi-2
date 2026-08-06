@@ -36,11 +36,18 @@ export default function UsersCreate({
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
+        phone: '',
+        notify_via_whatsapp: true as boolean,
+        notify_via_sms: false as boolean,
         password: '',
         password_confirmation: '',
         is_super_admin: false as boolean,
         memberships: [] as MembershipForm[],
     });
+
+    const hasContactRole = data.memberships.some(
+        (membership) => membership.role === 'contact',
+    );
 
     function addMembership() {
         setData('memberships', [
@@ -257,6 +264,63 @@ export default function UsersCreate({
                             </div>
                         ))}
                     </div>
+
+                    {hasContactRole && (
+                        <div className="space-y-4 rounded-xl border p-4">
+                            <Heading
+                                variant="small"
+                                title="Datos de contacto"
+                                description="Para alertas de puntos urgentes"
+                            />
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Teléfono</Label>
+                                <Input
+                                    id="phone"
+                                    value={data.phone}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
+                                    placeholder="+52 55 1234 5678"
+                                />
+                                <InputError message={errors.phone} />
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Checkbox
+                                    id="notify_via_whatsapp"
+                                    checked={data.notify_via_whatsapp}
+                                    onCheckedChange={(checked) =>
+                                        setData(
+                                            'notify_via_whatsapp',
+                                            checked === true,
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="notify_via_whatsapp">
+                                    Notificar por WhatsApp
+                                </Label>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Checkbox
+                                    id="notify_via_sms"
+                                    checked={data.notify_via_sms}
+                                    onCheckedChange={(checked) =>
+                                        setData(
+                                            'notify_via_sms',
+                                            checked === true,
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="notify_via_sms">
+                                    Notificar por SMS
+                                </Label>
+                            </div>
+
+                            <InputError message={errors.notify_via_whatsapp} />
+                        </div>
+                    )}
 
                     <div className="flex gap-3">
                         <Button type="submit" disabled={processing}>

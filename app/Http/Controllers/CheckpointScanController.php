@@ -7,9 +7,11 @@ use App\Http\Requests\CheckpointScan\MarkAllClearRequest;
 use App\Http\Requests\CheckpointScan\StoreCheckpointScanRequest;
 use App\Models\Checkpoint;
 use App\Models\CheckpointSubmission;
+use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Services\CheckpointVisitPhotoStore;
 use App\Services\PatrolVisitRecorder;
+use App\Services\UrgentVisitNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -23,6 +25,7 @@ class CheckpointScanController extends Controller
     public function __construct(
         private PatrolVisitRecorder $visitRecorder,
         private CheckpointVisitPhotoStore $photoStore,
+        private UrgentVisitNotifier $urgentNotifier,
     ) {}
 
     public function show(Request $request, string $token): Response
@@ -80,7 +83,7 @@ class CheckpointScanController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($request, $checkpoint, $patrol): void {
+        $visit = DB::transaction(function () use ($request, $checkpoint, $patrol): PatrolCheckpointVisit {
             $submission = CheckpointSubmission::query()->create([
                 'checkpoint_id' => $checkpoint->id,
                 'user_id' => $request->user()->id,
@@ -99,16 +102,24 @@ class CheckpointScanController extends Controller
                 $checkpoint,
                 PatrolVisitOutcome::Questionnaire,
                 $submission,
+                $request->boolean('is_urgent'),
+                $request->input('urgent_notes'),
             );
 
             $this->photoStore->store($visit, $this->uploadedPhotos($request));
+
+            return $visit;
         });
+
+        $this->urgentNotifier->notify($visit);
 
         $request->session()->forget('patrol_verified_checkpoint_id');
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('Respuestas enviadas correctamente.'),
+            'message' => $request->boolean('is_urgent')
+                ? __('Respuestas enviadas. Se notificó al contacto asignado.')
+                : __('Respuestas enviadas correctamente.'),
         ]);
 
         return to_route('checkpoints.scan.complete', $token);
@@ -121,21 +132,29 @@ class CheckpointScanController extends Controller
 
         $patrol = $this->requireActivePatrol($request, $checkpoint);
 
-        DB::transaction(function () use ($request, $checkpoint, $patrol): void {
+        $visit = DB::transaction(function () use ($request, $checkpoint, $patrol): PatrolCheckpointVisit {
             $visit = $this->visitRecorder->record(
                 $patrol,
                 $checkpoint,
                 PatrolVisitOutcome::AllClear,
+                isUrgent: $request->boolean('is_urgent'),
+                urgentNotes: $request->input('urgent_notes'),
             );
 
             $this->photoStore->store($visit, $this->uploadedPhotos($request));
+
+            return $visit;
         });
+
+        $this->urgentNotifier->notify($visit);
 
         $request->session()->forget('patrol_verified_checkpoint_id');
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('Punto marcado como área sin novedad.'),
+            'message' => $request->boolean('is_urgent')
+                ? __('Punto marcado como urgente. Se notificó al contacto asignado.')
+                : __('Punto marcado como área sin novedad.'),
         ]);
 
         return to_route('checkpoints.scan.complete', $token);

@@ -22,6 +22,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property bool $is_super_admin
+ * @property string|null $phone
+ * @property bool $notify_via_whatsapp
+ * @property bool $notify_via_sms
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -29,7 +32,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'is_super_admin'])]
+#[Fillable(['name', 'email', 'password', 'is_super_admin', 'phone', 'notify_via_whatsapp', 'notify_via_sms'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -48,6 +51,8 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'is_super_admin' => 'boolean',
+            'notify_via_whatsapp' => 'boolean',
+            'notify_via_sms' => 'boolean',
         ];
     }
 

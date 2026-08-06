@@ -28,6 +28,9 @@ type EditableUser = {
     id: number;
     name: string;
     email: string;
+    phone: string | null;
+    notify_via_whatsapp: boolean;
+    notify_via_sms: boolean;
     is_super_admin: boolean;
     memberships: AreaMembership[];
 };
@@ -46,6 +49,9 @@ export default function UsersEdit({
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
         email: user.email,
+        phone: user.phone ?? '',
+        notify_via_whatsapp: user.notify_via_whatsapp,
+        notify_via_sms: user.notify_via_sms,
         password: '',
         password_confirmation: '',
         is_super_admin: user.is_super_admin,
@@ -54,6 +60,10 @@ export default function UsersEdit({
             role: membership.role,
         })) as MembershipForm[],
     });
+
+    const hasContactRole = data.memberships.some(
+        (membership) => membership.role === 'contact',
+    );
 
     function addMembership() {
         setData('memberships', [
@@ -154,6 +164,63 @@ export default function UsersEdit({
                             }
                         />
                     </div>
+
+                    {hasContactRole && (
+                        <div className="space-y-4 rounded-xl border p-4">
+                            <Heading
+                                variant="small"
+                                title="Datos de contacto"
+                                description="Para alertas de puntos urgentes"
+                            />
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Teléfono</Label>
+                                <Input
+                                    id="phone"
+                                    value={data.phone}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
+                                    placeholder="+52 55 1234 5678"
+                                />
+                                <InputError message={errors.phone} />
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Checkbox
+                                    id="notify_via_whatsapp"
+                                    checked={data.notify_via_whatsapp}
+                                    onCheckedChange={(checked) =>
+                                        setData(
+                                            'notify_via_whatsapp',
+                                            checked === true,
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="notify_via_whatsapp">
+                                    Notificar por WhatsApp
+                                </Label>
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <Checkbox
+                                    id="notify_via_sms"
+                                    checked={data.notify_via_sms}
+                                    onCheckedChange={(checked) =>
+                                        setData(
+                                            'notify_via_sms',
+                                            checked === true,
+                                        )
+                                    }
+                                />
+                                <Label htmlFor="notify_via_sms">
+                                    Notificar por SMS
+                                </Label>
+                            </div>
+
+                            <InputError message={errors.notify_via_whatsapp} />
+                        </div>
+                    )}
 
                     {canGrantSuperAdmin && (
                         <div className="flex items-center gap-3">

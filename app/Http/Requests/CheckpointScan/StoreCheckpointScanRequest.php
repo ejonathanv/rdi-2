@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\CheckpointScan;
 
+use App\Concerns\UrgentVisitRules;
 use App\Models\Checkpoint;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Validator;
 
 class StoreCheckpointScanRequest extends FormRequest
 {
+    use UrgentVisitRules;
+
     private ?Checkpoint $checkpoint = null;
 
     public function authorize(): bool
@@ -28,6 +31,7 @@ class StoreCheckpointScanRequest extends FormRequest
             'answers.*' => ['required', 'integer'],
             'photos' => ['nullable', 'array', 'max:3'],
             'photos.*' => ['required', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:10240'],
+            ...$this->urgentVisitRules(),
         ];
     }
 
@@ -92,6 +96,7 @@ class StoreCheckpointScanRequest extends FormRequest
             'photos.*.mimes' => __('Las fotos deben ser JPEG, PNG o WebP.'),
             'photos.*.max' => __('Cada foto no puede superar los 10 MB.'),
             'photos.*.uploaded' => __('No se pudo subir la foto. Prueba con una imagen más pequeña.'),
+            ...$this->urgentVisitMessages(),
         ];
     }
 

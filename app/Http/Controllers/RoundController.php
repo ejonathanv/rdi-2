@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AreaRole;
 use App\Http\Requests\Round\StoreRoundRequest;
 use App\Http\Requests\Round\UpdateRoundRequest;
 use App\Models\Area;
 use App\Models\Round;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -65,7 +67,7 @@ class RoundController extends Controller
     {
         $this->authorize('update', $round);
 
-        $round->load(['area:id,name,code', 'checkpoints' => fn ($query) => $query->withCount('questions')]);
+        $round->load(['area:id,name,code', 'checkpoints' => fn ($query) => $query->withCount('questions'), 'contacts:id,name,email,phone']);
 
         return Inertia::render('rounds/edit', [
             'area' => $round->area->only(['id', 'name', 'code']),
@@ -84,6 +86,8 @@ class RoundController extends Controller
                     'questions_count' => $checkpoint->questions_count,
                 ]),
             ],
+            'availableContacts' => $this->availableContactsFor($round),
+            'assignedContactIds' => $round->contacts->pluck('id')->all(),
         ]);
     }
 
@@ -94,6 +98,8 @@ class RoundController extends Controller
             'instructions' => $request->validated('instructions'),
             'is_active' => $request->boolean('is_active'),
         ]);
+
+        $round->contacts()->sync($request->validated('contact_ids', []));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Recorrido actualizado.')]);
 
@@ -121,5 +127,25 @@ class RoundController extends Controller
         }
 
         return Area::query()->find((int) $areaId);
+    }
+
+    /**
+     * @return list<array{id: int, name: string, email: string, phone: string|null}>
+     */
+    private function availableContactsFor(Round $round): array
+    {
+        return User::query()
+            ->whereHas('areas', fn ($query) => $query
+                ->where('areas.id', $round->area_id)
+                ->where('role', AreaRole::Contact->value))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'phone'])
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ])
+            ->all();
     }
 }

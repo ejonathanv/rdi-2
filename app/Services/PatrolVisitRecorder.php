@@ -18,6 +18,8 @@ class PatrolVisitRecorder
         Checkpoint $checkpoint,
         PatrolVisitOutcome $outcome,
         ?CheckpointSubmission $submission = null,
+        bool $isUrgent = false,
+        ?string $urgentNotes = null,
     ): PatrolCheckpointVisit {
         abort_unless($patrol->isInProgress(), 422);
         abort_unless($checkpoint->round_id === $patrol->round_id, 403);
@@ -28,12 +30,14 @@ class PatrolVisitRecorder
             ]);
         }
 
-        return DB::transaction(function () use ($patrol, $checkpoint, $outcome, $submission) {
+        return DB::transaction(function () use ($patrol, $checkpoint, $outcome, $submission, $isUrgent, $urgentNotes) {
             $visit = PatrolCheckpointVisit::query()->create([
                 'patrol_run_id' => $patrol->id,
                 'checkpoint_id' => $checkpoint->id,
                 'reviewed_at' => now(),
                 'outcome' => $outcome,
+                'is_urgent' => $isUrgent,
+                'urgent_notes' => $isUrgent ? $urgentNotes : null,
                 'checkpoint_submission_id' => $submission?->id,
             ]);
 

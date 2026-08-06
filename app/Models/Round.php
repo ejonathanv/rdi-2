@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -57,5 +58,13 @@ class Round extends Model
     public function patrolRuns(): HasMany
     {
         return $this->hasMany(PatrolRun::class);
+    }
+
+    /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function contacts(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'round_contact')->withTimestamps();
     }
 }
