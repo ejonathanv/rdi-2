@@ -9,6 +9,14 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import UrgentReviewFields from '@/components/urgent-review-fields';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { show as showPatrol } from '@/routes/guard/patrols';
@@ -25,6 +33,8 @@ type QuestionRow = {
     position: number;
     options: OptionRow[];
 };
+
+type ConfirmAction = 'questionnaire' | 'all_clear' | 'incident' | null;
 
 export default function CheckpointScan({
     area,
@@ -47,6 +57,7 @@ export default function CheckpointScan({
     const [photos, setPhotos] = useState<File[]>([]);
     const [isUrgent, setIsUrgent] = useState(false);
     const [urgentNotes, setUrgentNotes] = useState('');
+    const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
     const form = useForm<{
         answers: Record<string, number | null>;
@@ -89,15 +100,39 @@ export default function CheckpointScan({
 
     const urgentErrors = {
         ...Object.fromEntries(
-            Object.entries(form.errors).filter(([key]) =>
-                key.startsWith('urgent') || key === 'is_urgent',
+            Object.entries(form.errors).filter(
+                ([key]) => key.startsWith('urgent') || key === 'is_urgent',
             ),
         ),
         ...Object.fromEntries(
-            Object.entries(allClearForm.errors).filter(([key]) =>
-                key.startsWith('urgent') || key === 'is_urgent',
+            Object.entries(allClearForm.errors).filter(
+                ([key]) => key.startsWith('urgent') || key === 'is_urgent',
             ),
         ),
+    };
+
+    const confirmCopy: Record<
+        Exclude<ConfirmAction, null>,
+        { title: string; description: string; confirmLabel: string }
+    > = {
+        questionnaire: {
+            title: '¿Enviar respuestas?',
+            description:
+                'Se registrará el cuestionario de este punto. Esta acción no se puede deshacer.',
+            confirmLabel: 'Sí, enviar respuestas',
+        },
+        all_clear: {
+            title: '¿Marcar área sin novedad?',
+            description:
+                'Se registrará este punto como sin novedad. Asegúrate de no querer enviar el cuestionario en su lugar.',
+            confirmLabel: 'Sí, área sin novedad',
+        },
+        incident: {
+            title: 'Reportar incidencia',
+            description:
+                'El reporte manual de incidencia estará disponible próximamente.',
+            confirmLabel: 'Entendido',
+        },
     };
 
     const submitQuestionnaire = () => {
@@ -124,6 +159,19 @@ export default function CheckpointScan({
         });
     };
 
+    const handleConfirm = () => {
+        const action = confirmAction;
+        setConfirmAction(null);
+
+        if (action === 'questionnaire') {
+            submitQuestionnaire();
+        }
+
+        if (action === 'all_clear') {
+            submitAllClear();
+        }
+    };
+
     if (patrol?.already_reviewed) {
         return (
             <>
@@ -148,6 +196,8 @@ export default function CheckpointScan({
             </>
         );
     }
+
+    const dialog = confirmAction ? confirmCopy[confirmAction] : null;
 
     return (
         <>
@@ -268,7 +318,7 @@ export default function CheckpointScan({
                             type="button"
                             className="w-full"
                             disabled={busy || !patrol}
-                            onClick={submitQuestionnaire}
+                            onClick={() => setConfirmAction('questionnaire')}
                         >
                             {form.processing && <Spinner />}
                             Enviar respuestas
@@ -280,7 +330,7 @@ export default function CheckpointScan({
                         className="w-full"
                         variant={questions.length > 0 ? 'secondary' : 'default'}
                         disabled={busy || !patrol}
-                        onClick={submitAllClear}
+                        onClick={() => setConfirmAction('all_clear')}
                     >
                         {allClearForm.processing && <Spinner />}
                         Área sin novedad
@@ -290,7 +340,8 @@ export default function CheckpointScan({
                         type="button"
                         variant="outline"
                         className="w-full"
-                        disabled
+                        disabled={busy}
+                        onClick={() => setConfirmAction('incident')}
                     >
                         Reportar incidencia
                     </Button>
@@ -309,6 +360,47 @@ export default function CheckpointScan({
                     )}
                 </div>
             </div>
+
+            <Dialog
+                open={confirmAction !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setConfirmAction(null);
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{dialog?.title}</DialogTitle>
+                        <DialogDescription>
+                            {dialog?.description}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        {confirmAction === 'incident' ? (
+                            <Button
+                                type="button"
+                                onClick={() => setConfirmAction(null)}
+                            >
+                                {dialog?.confirmLabel}
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setConfirmAction(null)}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button type="button" onClick={handleConfirm}>
+                                    {dialog?.confirmLabel}
+                                </Button>
+                            </>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

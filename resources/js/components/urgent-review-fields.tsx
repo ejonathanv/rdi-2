@@ -21,7 +21,9 @@ export default function UrgentReviewFields({
         <div className="space-y-3 rounded-xl border p-4">
             <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <Label htmlFor="is_urgent">Urgente de revisión</Label>
+                    <Label htmlFor="is_urgent" className="text-destructive">
+                        Urgente de revisión
+                    </Label>
                     <p className="text-sm text-muted-foreground">
                         Notifica al contacto asignado al recorrido.
                     </p>
@@ -48,7 +50,7 @@ export default function UrgentReviewFields({
                             onNotesChange(event.target.value)
                         }
                         placeholder="Describe lo observado en el punto…"
-                        className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                        className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-background px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] md:text-sm"
                     />
                     <InputError message={errors.urgent_notes} />
                 </div>
