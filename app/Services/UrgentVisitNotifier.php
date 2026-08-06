@@ -23,7 +23,18 @@ class UrgentVisitNotifier
 
         $message = $this->buildMessage($visit);
 
-        foreach ($visit->patrolRun->round->contacts as $contact) {
+        $contacts = $visit->patrolRun->round->contacts;
+
+        if ($contacts->isEmpty()) {
+            Log::warning('Punto urgente sin contactos asignados al recorrido.', [
+                'visit_id' => $visit->id,
+                'round_id' => $visit->patrolRun->round_id,
+            ]);
+
+            return;
+        }
+
+        foreach ($contacts as $contact) {
             $this->notifyContact($contact, $message);
         }
     }
@@ -124,7 +135,52 @@ class UrgentVisitNotifier
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
+            return;
         }
+
+        $messageSid = $response->json('sid');
+
+        Log::info("Alerta urgente aceptada por Twilio ({$channel}).", [
+            'to' => $to,
+            'sid' => $messageSid,
+            'status' => $response->json('status'),
+        ]);
+
+        if (! is_string($messageSid) || $messageSid === '') {
+            return;
+        }
+
+        // El sandbox puede aceptar el mensaje y fallar después (p. ej. 63015).
+        usleep(1_500_000);
+
+        $statusResponse = Http::withBasicAuth($sid, $token)
+            ->get("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages/{$messageSid}.json");
+
+        if ($statusResponse->failed()) {
+            return;
+        }
+
+        $finalStatus = $statusResponse->json('status');
+        $errorCode = $statusResponse->json('error_code');
+
+        if (in_array($finalStatus, ['failed', 'undelivered'], true)) {
+            Log::error("Alerta urgente no entregada por {$channel}.", [
+                'to' => $to,
+                'sid' => $messageSid,
+                'status' => $finalStatus,
+                'error_code' => $errorCode,
+                'error_message' => $statusResponse->json('error_message'),
+            ]);
+
+            return;
+        }
+
+        Log::info("Alerta urgente entregada/en curso por {$channel}.", [
+            'to' => $to,
+            'sid' => $messageSid,
+            'status' => $finalStatus,
+        ]);
     }
 
     private function formatE164(string $phone): string
