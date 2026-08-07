@@ -1,5 +1,12 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Building2, ClipboardList, LayoutGrid, Route, Users } from 'lucide-react';
+import {
+    Building2,
+    ClipboardList,
+    LayoutGrid,
+    Route,
+    Tags,
+    Users,
+} from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -24,6 +31,7 @@ import { update as updateCurrentArea } from '@/routes/current-area';
 import { dashboard } from '@/routes';
 import { index as areasIndex } from '@/routes/areas';
 import { home as guardHome } from '@/routes/guard';
+import { index as incidentCategoriesIndex } from '@/routes/incident-categories';
 import { index as rondinesIndex } from '@/routes/rondines';
 import { index as roundsIndex } from '@/routes/rounds';
 import { index as usersIndex } from '@/routes/users';
@@ -80,6 +88,12 @@ export function AppSidebar() {
                 title: 'Recorridos',
                 href: roundsIndex(),
                 icon: Route,
+            });
+
+            items.push({
+                title: 'Categorías',
+                href: incidentCategoriesIndex(),
+                icon: Tags,
             });
 
             items.push({

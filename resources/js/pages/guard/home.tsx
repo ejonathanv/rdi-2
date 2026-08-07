@@ -3,6 +3,7 @@ import { AlertTriangle, Route } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { home as guardHome } from '@/routes/guard';
+import { create as incidentsCreate } from '@/routes/incidents';
 import { index as guardRoundsIndex } from '@/routes/guard/rounds';
 
 export default function GuardHome() {
@@ -25,18 +26,16 @@ export default function GuardHome() {
                     </Button>
 
                     <Button
-                        type="button"
+                        asChild
                         size="lg"
                         variant="outline"
                         className="h-14 w-full text-base"
-                        disabled
                     >
-                        <AlertTriangle className="size-5" />
-                        Reportar incidente
+                        <Link href={incidentsCreate()}>
+                            <AlertTriangle className="size-5" />
+                            Reportar incidencia
+                        </Link>
                     </Button>
-                    <p className="text-center text-xs text-muted-foreground">
-                        Reportar incidente — próximamente
-                    </p>
                 </div>
             </div>
         </>

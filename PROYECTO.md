@@ -118,9 +118,12 @@ Consulta admin: pestaña **Rondines** — listado de recorridos del área → ro
 
 **Contactos:** teléfono y preferencias de notificación en usuarios; asignación por recorrido en editar recorrido.
 
+**Incidencias:** desde `/guardia` o desde un punto (`/scan/{token}/incidencia`) el guardia reporta con mensaje, hasta 3 fotos y flag urgente. OpenAI limpia el texto y asigna una **categoría** del área; se notifica a los contactos de esa categoría (`incident_category_contact`). Si viene del scan, la incidencia queda ligada a patrulla/punto y la visita queda con outcome `incident`.
+
+**Categorías:** CRUD admin por área (`/incident-categories`) con código, descripción y contactos asignados.
+
 ## Dominio futuro
 
-- Reporte de incidencia manual (alternativa a “área sin novedad” / cuestionario)
 - Panel de contactos (dashboard de urgentes y recorridos asignados)
 - `round_assignments` / reportes agregados
 - Abandonar patrulla a mitad

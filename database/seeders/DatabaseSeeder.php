@@ -94,5 +94,7 @@ class DatabaseSeeder extends Seeder
             ['label' => 'No', 'position' => 2],
             ['label' => 'No sé', 'position' => 3],
         ]);
+
+        $this->call(IncidentCategorySeeder::class);
     }
 }

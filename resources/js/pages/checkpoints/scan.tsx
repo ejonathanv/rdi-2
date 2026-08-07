@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     allClear,
@@ -20,6 +20,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { show as showPatrol } from '@/routes/guard/patrols';
+import { incident as scanIncident } from '@/routes/checkpoints/scan';
 
 type OptionRow = {
     id: number;
@@ -34,7 +35,7 @@ type QuestionRow = {
     options: OptionRow[];
 };
 
-type ConfirmAction = 'questionnaire' | 'all_clear' | 'incident' | null;
+type ConfirmAction = 'questionnaire' | 'all_clear' | null;
 
 export default function CheckpointScan({
     area,
@@ -126,12 +127,6 @@ export default function CheckpointScan({
             description:
                 'Se registrará este punto como sin novedad. Asegúrate de no querer enviar el cuestionario en su lugar.',
             confirmLabel: 'Sí, área sin novedad',
-        },
-        incident: {
-            title: 'Reportar incidencia',
-            description:
-                'El reporte manual de incidencia estará disponible próximamente.',
-            confirmLabel: 'Entendido',
         },
     };
 
@@ -340,14 +335,13 @@ export default function CheckpointScan({
                         type="button"
                         variant="outline"
                         className="w-full"
-                        disabled={busy}
-                        onClick={() => setConfirmAction('incident')}
+                        disabled={busy || !patrol}
+                        onClick={() =>
+                            router.visit(scanIncident.url(checkpoint.token))
+                        }
                     >
                         Reportar incidencia
                     </Button>
-                    <p className="text-center text-xs text-muted-foreground">
-                        Reportar incidencia — próximamente
-                    </p>
 
                     <InputError message={allClearForm.errors.checkpoint} />
                     <InputError message={allClearForm.errors.patrol} />
@@ -377,27 +371,16 @@ export default function CheckpointScan({
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        {confirmAction === 'incident' ? (
-                            <Button
-                                type="button"
-                                onClick={() => setConfirmAction(null)}
-                            >
-                                {dialog?.confirmLabel}
-                            </Button>
-                        ) : (
-                            <>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setConfirmAction(null)}
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button type="button" onClick={handleConfirm}>
-                                    {dialog?.confirmLabel}
-                                </Button>
-                            </>
-                        )}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setConfirmAction(null)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="button" onClick={handleConfirm}>
+                            {dialog?.confirmLabel}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
