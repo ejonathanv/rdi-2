@@ -5,6 +5,14 @@ import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { home as guardHome } from '@/routes/guard';
@@ -33,6 +41,7 @@ export default function IncidentCreate({
     cancel_url: string;
 }) {
     const [photos, setPhotos] = useState<File[]>([]);
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     const form = useForm<{
         message: string;
@@ -46,8 +55,13 @@ export default function IncidentCreate({
         checkpoint_token: context?.checkpoint_token ?? null,
     });
 
-    const submit = (event: React.FormEvent) => {
+    const requestConfirm = (event: React.FormEvent) => {
         event.preventDefault();
+        setConfirmOpen(true);
+    };
+
+    const submitIncident = () => {
+        setConfirmOpen(false);
 
         form.transform((data) => ({
             ...data,
@@ -78,7 +92,7 @@ export default function IncidentCreate({
                     }
                 />
 
-                <form onSubmit={submit} className="space-y-6">
+                <form onSubmit={requestConfirm} className="space-y-6">
                     <div className="grid gap-2">
                         <Label htmlFor="message">¿Qué está pasando?</Label>
                         <textarea
@@ -148,6 +162,44 @@ export default function IncidentCreate({
                     </div>
                 </form>
             </div>
+
+            <Dialog
+                open={confirmOpen}
+                onOpenChange={(open) => {
+                    if (!open && !form.processing) {
+                        setConfirmOpen(false);
+                    }
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>¿Guardar incidencia?</DialogTitle>
+                        <DialogDescription>
+                            {form.data.is_urgent
+                                ? 'Se registrará como urgente y se notificará a los contactos. Esta acción no se puede deshacer.'
+                                : 'Se registrará la incidencia y se notificará a los contactos de la categoría. Esta acción no se puede deshacer.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={form.processing}
+                            onClick={() => setConfirmOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="button"
+                            disabled={form.processing}
+                            onClick={submitIncident}
+                        >
+                            {form.processing && <Spinner />}
+                            Sí, guardar incidencia
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
