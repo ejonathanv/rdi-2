@@ -150,7 +150,7 @@ class IncidentReportTest extends TestCase
 
     public function test_ai_can_create_new_category_when_none_match(): void
     {
-        [$guard, $area] = $this->guardWithCategoryAndContact();
+        [$guard, $area, , $contact] = $this->guardWithCategoryAndContact();
 
         $this->mock(IncidentAiProcessor::class, function ($mock): void {
             $mock->shouldReceive('process')
@@ -167,6 +167,13 @@ class IncidentReportTest extends TestCase
         });
 
         Http::fake();
+
+        config([
+            'twilio.account_sid' => 'ACtest',
+            'twilio.auth_token' => 'token',
+            'twilio.sms_from' => '+15550001111',
+            'twilio.whatsapp_from' => 'whatsapp:+15550001111',
+        ]);
 
         $this->actingAs($guard)
             ->withSession(['current_area_id' => $area->id])
@@ -191,7 +198,74 @@ class IncidentReportTest extends TestCase
             'incident_category_id' => $category->id,
         ]);
 
-        Http::assertNothingSent();
+        Http::assertSent(function ($request) use ($contact) {
+            return str_contains($request->url(), 'api.twilio.com')
+                && str_contains((string) $request['Body'], 'Incidencia registrada')
+                && str_contains((string) $request['To'], $contact->phone);
+        });
+    }
+
+    public function test_category_without_contacts_notifies_all_area_contacts(): void
+    {
+        $area = Area::factory()->create();
+        $guard = User::factory()->create();
+        $guard->areas()->attach($area->id, ['role' => AreaRole::Guard->value]);
+
+        $category = IncidentCategory::factory()->create([
+            'area_id' => $area->id,
+            'code' => 'SIN_CONTACTO',
+            'name' => 'Sin contacto',
+        ]);
+
+        $areaContact = User::factory()->create([
+            'phone' => '5511112222',
+            'notify_via_whatsapp' => true,
+            'notify_via_sms' => false,
+        ]);
+        $areaContact->areas()->attach($area->id, ['role' => AreaRole::Contact->value]);
+
+        $otherArea = Area::factory()->create();
+        $otherContact = User::factory()->create([
+            'phone' => '5533334444',
+            'notify_via_whatsapp' => true,
+            'notify_via_sms' => false,
+        ]);
+        $otherContact->areas()->attach($otherArea->id, ['role' => AreaRole::Contact->value]);
+
+        $this->mock(IncidentAiProcessor::class, function ($mock) use ($category): void {
+            $mock->shouldReceive('process')
+                ->once()
+                ->andReturn([
+                    'cleaned_message' => 'Condición insegura en pasillo.',
+                    'category_code' => $category->code,
+                    'new_category' => null,
+                ]);
+        });
+
+        Http::fake();
+
+        config([
+            'twilio.account_sid' => 'ACtest',
+            'twilio.auth_token' => 'token',
+            'twilio.sms_from' => '+15550001111',
+            'twilio.whatsapp_from' => 'whatsapp:+15550001111',
+        ]);
+
+        $this->actingAs($guard)
+            ->withSession(['current_area_id' => $area->id])
+            ->post(route('incidents.store'), [
+                'message' => 'piso mojado',
+            ])
+            ->assertRedirect(route('guard.home'));
+
+        Http::assertSent(function ($request) use ($areaContact) {
+            return str_contains($request->url(), 'api.twilio.com')
+                && str_contains((string) $request['To'], $areaContact->phone);
+        });
+
+        Http::assertNotSent(function ($request) use ($otherContact) {
+            return str_contains((string) ($request['To'] ?? ''), $otherContact->phone);
+        });
     }
 
     public function test_guest_cannot_create_incident(): void

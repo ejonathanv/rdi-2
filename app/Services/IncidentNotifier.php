@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\AreaRole;
 use App\Models\Incident;
+use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class IncidentNotifier
@@ -27,12 +30,13 @@ class IncidentNotifier
             return;
         }
 
-        $contacts = $incident->category->contacts;
+        $contacts = $this->resolveContacts($incident);
 
         if ($contacts->isEmpty()) {
-            Log::warning('Categoría de incidencia sin contactos asignados.', [
+            Log::warning('Incidencia sin contactos de categoría ni del área.', [
                 'incident_id' => $incident->id,
                 'category_id' => $incident->category->id,
+                'area_id' => $incident->area_id,
             ]);
 
             return;
@@ -43,6 +47,33 @@ class IncidentNotifier
         foreach ($contacts as $contact) {
             $this->twilio->notifyContact($contact, $message, 'Alerta de incidencia');
         }
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    private function resolveContacts(Incident $incident): Collection
+    {
+        $categoryContacts = $incident->category->contacts;
+
+        if ($categoryContacts->isNotEmpty()) {
+            return $categoryContacts;
+        }
+
+        Log::info('Categoría sin contactos; se notifica a contactos del área.', [
+            'incident_id' => $incident->id,
+            'category_id' => $incident->category->id,
+            'area_id' => $incident->area_id,
+        ]);
+
+        return User::query()
+            ->whereHas(
+                'areas',
+                fn ($query) => $query
+                    ->where('areas.id', $incident->area_id)
+                    ->where('area_user.role', AreaRole::Contact->value),
+            )
+            ->get();
     }
 
     private function buildMessage(Incident $incident): string
