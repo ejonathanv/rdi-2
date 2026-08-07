@@ -126,6 +126,10 @@ Consulta admin: pestaña **Rondines** — listado de recorridos del área → ro
 
 ## Dominio futuro
 
+Ver checklist vivo en [`ROADMAP.md`](ROADMAP.md) (estados de incidencia, Twilio producción, pánicos, reportes, panel contactos, PWA, GPS, SLA, etc.).
+
+Ítems históricos aún referenciados ahí:
+
 - Panel de contactos (dashboard de urgentes y recorridos asignados)
 - `round_assignments` / reportes agregados
 - Abandonar patrulla a mitad
