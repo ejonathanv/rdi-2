@@ -16,4 +16,9 @@ class IncidentPolicy
     {
         return $user->canManageArea($incident->area);
     }
+
+    public function update(User $user, Incident $incident): bool
+    {
+        return $user->canManageArea($incident->area);
+    }
 }

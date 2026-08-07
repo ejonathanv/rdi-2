@@ -75,6 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('incidencias', [AdminIncidentController::class, 'index'])->name('incidencias.index');
         Route::get('incidencias/{incident}', [AdminIncidentController::class, 'show'])->name('incidencias.show');
+        Route::patch('incidencias/{incident}/estado', [AdminIncidentController::class, 'updateStatus'])
+            ->name('incidencias.status');
 
         Route::post('rounds/{round}/checkpoints', [CheckpointController::class, 'store'])
             ->name('rounds.checkpoints.store');

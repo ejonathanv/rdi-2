@@ -29,6 +29,11 @@ type Kpis = {
     incidents_today: number;
     urgent_incidents_today: number;
     panics_today: number;
+    open_incidents: number;
+    avg_response_seconds: number | null;
+    avg_response_label: string | null;
+    avg_resolution_seconds: number | null;
+    avg_resolution_label: string | null;
 };
 
 type UrgentRow = {
@@ -191,7 +196,7 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <Card className="gap-3 py-4">
                         <CardHeader className="px-4">
                             <CardDescription>Incidencias hoy</CardDescription>
@@ -215,6 +220,37 @@ export default function Dashboard({
                             <CardDescription>Pánicos hoy</CardDescription>
                             <CardTitle className="text-3xl text-destructive">
                                 {kpis.panics_today}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+                    <Card className="gap-3 py-4">
+                        <CardHeader className="px-4">
+                            <CardDescription>Incidencias abiertas</CardDescription>
+                            <CardTitle className="text-3xl">
+                                {kpis.open_incidents}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <Card className="gap-3 py-4">
+                        <CardHeader className="px-4">
+                            <CardDescription>
+                                Tiempo respuesta incidencias (7 días)
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {kpis.avg_response_label ?? '—'}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+                    <Card className="gap-3 py-4">
+                        <CardHeader className="px-4">
+                            <CardDescription>
+                                Tiempo cierre incidencias (7 días)
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {kpis.avg_resolution_label ?? '—'}
                             </CardTitle>
                         </CardHeader>
                     </Card>

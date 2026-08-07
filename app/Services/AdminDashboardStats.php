@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\IncidentStatus;
 use App\Enums\PatrolRunStatus;
 use App\Models\Area;
 use App\Models\Incident;
@@ -27,7 +28,12 @@ class AdminDashboardStats
      *         average_duration_label: string|null,
      *         incidents_today: int,
      *         urgent_incidents_today: int,
-     *         panics_today: int
+     *         panics_today: int,
+     *         open_incidents: int,
+     *         avg_response_seconds: int|null,
+     *         avg_response_label: string|null,
+     *         avg_resolution_seconds: int|null,
+     *         avg_resolution_label: string|null
      *     },
      *     recent_urgents: list<array{
      *         id: int,
@@ -71,6 +77,11 @@ class AdminDashboardStats
                     'incidents_today' => 0,
                     'urgent_incidents_today' => 0,
                     'panics_today' => 0,
+                    'open_incidents' => 0,
+                    'avg_response_seconds' => null,
+                    'avg_response_label' => null,
+                    'avg_resolution_seconds' => null,
+                    'avg_resolution_label' => null,
                 ],
                 'recent_urgents' => [],
                 'recent_incidents' => [],
@@ -122,6 +133,17 @@ class AdminDashboardStats
             ->where('created_at', '>=', $todayStart)
             ->count();
 
+        $openIncidents = Incident::query()
+            ->where('area_id', $area->id)
+            ->whereIn('status', [
+                IncidentStatus::Nueva->value,
+                IncidentStatus::EnAtencion->value,
+            ])
+            ->count();
+
+        $avgResponseSeconds = $this->averageIncidentResponseSeconds($area->id, $weekStart);
+        $avgResolutionSeconds = $this->averageIncidentResolutionSeconds($area->id, $weekStart);
+
         return [
             'area' => $area->only(['id', 'name', 'code']),
             'kpis' => [
@@ -133,6 +155,11 @@ class AdminDashboardStats
                 'incidents_today' => $incidentsToday,
                 'urgent_incidents_today' => $urgentIncidentsToday,
                 'panics_today' => $panicsToday,
+                'open_incidents' => $openIncidents,
+                'avg_response_seconds' => $avgResponseSeconds,
+                'avg_response_label' => $this->reportBuilder->formatDuration($avgResponseSeconds),
+                'avg_resolution_seconds' => $avgResolutionSeconds,
+                'avg_resolution_label' => $this->reportBuilder->formatDuration($avgResolutionSeconds),
             ],
             'recent_urgents' => $this->recentUrgents($roundIds),
             'recent_incidents' => $this->recentIncidents($area->id),
@@ -163,6 +190,50 @@ class AdminDashboardStats
         );
 
         return (int) round($total / $runs->count());
+    }
+
+    private function averageIncidentResponseSeconds(int $areaId, CarbonInterface $since): ?int
+    {
+        $incidents = Incident::query()
+            ->where('area_id', $areaId)
+            ->whereNotNull('acknowledged_at')
+            ->where('acknowledged_at', '>=', $since)
+            ->get(['created_at', 'acknowledged_at']);
+
+        if ($incidents->isEmpty()) {
+            return null;
+        }
+
+        $total = $incidents->sum(
+            fn (Incident $incident) => max(
+                0,
+                (int) $incident->created_at->diffInSeconds($incident->acknowledged_at),
+            ),
+        );
+
+        return (int) round($total / $incidents->count());
+    }
+
+    private function averageIncidentResolutionSeconds(int $areaId, CarbonInterface $since): ?int
+    {
+        $incidents = Incident::query()
+            ->where('area_id', $areaId)
+            ->whereNotNull('resolved_at')
+            ->where('resolved_at', '>=', $since)
+            ->get(['created_at', 'resolved_at']);
+
+        if ($incidents->isEmpty()) {
+            return null;
+        }
+
+        $total = $incidents->sum(
+            fn (Incident $incident) => max(
+                0,
+                (int) $incident->created_at->diffInSeconds($incident->resolved_at),
+            ),
+        );
+
+        return (int) round($total / $incidents->count());
     }
 
     /**

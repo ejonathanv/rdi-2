@@ -31,13 +31,13 @@ Ya existe y no debe reimplementarse:
 
 Hoy se registra y se notifica; falta gestionar la respuesta.
 
-- [ ] Estados: `nueva` → `en_atencion` → `resuelta` / `descartada`
-- [ ] Quién tomó el caso (`assigned_to` / `acknowledged_by`)
-- [ ] Notas de cierre y timestamp de resolución
-- [ ] Tiempo de respuesta / tiempo de cierre (métricas en panel)
-- [ ] Notificar al cerrar (guardia y/o contactos, según reglas)
-- [ ] UI admin: cambiar estado desde detalle de incidencia
-- [ ] Filtros en listado por estado
+- [x] Estados: `nueva` → `en_atencion` → `resuelta` / `descartada`
+- [x] Quién tomó el caso (`assigned_to` / `acknowledged_by`)
+- [x] Notas de cierre y timestamp de resolución
+- [x] Tiempo de respuesta / tiempo de cierre (métricas en panel)
+- [x] Notificar al cerrar (guardia y/o contactos, según reglas)
+- [x] UI admin: cambiar estado desde detalle de incidencia
+- [x] Filtros en listado por estado
 
 **Por qué:** convierte RDI de “buzón de alertas” en sistema de gestión.
 
@@ -217,4 +217,4 @@ Hoy se registra y se notifica; falta gestionar la respuesta.
 
 | Fecha | Ítem | Notas |
 |-------|------|-------|
-| — | — | Ir añadiendo filas al completar |
+| 2026-08-07 | §1 Ciclo de vida de incidencias | Estados, toma/cierre admin, filtros, KPIs tiempos, notificación al cerrar |

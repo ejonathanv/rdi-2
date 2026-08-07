@@ -97,7 +97,7 @@ export default function LandingPage() {
                             <img
                                 src={rdiLogo}
                                 alt="Logotipo RDI"
-                                className="h-9 w-auto brightness-0 invert sm:h-10"
+                                className="h-[2.5875rem] w-auto sm:h-[2.875rem]"
                             />
                         </a>
                         <nav className="hidden items-center gap-8 text-sm text-white/85 md:flex">
@@ -335,7 +335,7 @@ export default function LandingPage() {
                     </div>
                 </section>
 
-                <footer className="border-t border-[#d8e0ea] bg-white py-10">
+                <footer className="bg-primary py-10">
                     <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                         <div className="flex items-center gap-3">
                             <img
@@ -343,11 +343,11 @@ export default function LandingPage() {
                                 alt="Logotipo RDI"
                                 className="h-8 w-auto"
                             />
-                            <span className="text-sm text-[#5a6b7d]">
+                            <span className="text-sm text-primary-foreground/75">
                                 Recorridos · Incidencias · Alertas
                             </span>
                         </div>
-                        <p className="text-sm text-[#5a6b7d]">
+                        <p className="text-sm text-primary-foreground/75">
                             © {new Date().getFullYear()} RDI. Plataforma de
                             control operativo.
                         </p>

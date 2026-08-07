@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\IncidentStatus;
 use App\Enums\PatrolVisitOutcome;
 use App\Models\Area;
 use App\Models\Checkpoint;
@@ -41,6 +42,7 @@ class IncidentReporter
                 'checkpoint_id' => $checkpoint?->id,
                 'message_raw' => $message,
                 'is_urgent' => $isUrgent,
+                'status' => IncidentStatus::Nueva,
             ]);
 
             $this->photoStore->store($incident, $photos);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\IncidentStatus;
 use Database\Factories\IncidentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $message_cleaned
  * @property int|null $incident_category_id
  * @property bool $is_urgent
+ * @property IncidentStatus $status
+ * @property int|null $assigned_to_id
+ * @property Carbon|null $acknowledged_at
+ * @property int|null $resolved_by_id
+ * @property Carbon|null $resolved_at
+ * @property string|null $resolution_notes
  * @property Carbon|null $categorized_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -33,6 +40,12 @@ use Illuminate\Support\Carbon;
     'message_cleaned',
     'incident_category_id',
     'is_urgent',
+    'status',
+    'assigned_to_id',
+    'acknowledged_at',
+    'resolved_by_id',
+    'resolved_at',
+    'resolution_notes',
     'categorized_at',
 ])]
 class Incident extends Model
@@ -47,6 +60,9 @@ class Incident extends Model
     {
         return [
             'is_urgent' => 'boolean',
+            'status' => IncidentStatus::class,
+            'acknowledged_at' => 'datetime',
+            'resolved_at' => 'datetime',
             'categorized_at' => 'datetime',
         ];
     }
@@ -65,6 +81,22 @@ class Incident extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by_id');
     }
 
     /**
@@ -97,5 +129,23 @@ class Incident extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(IncidentPhoto::class)->orderBy('position');
+    }
+
+    public function responseSeconds(): ?int
+    {
+        if ($this->acknowledged_at === null || $this->created_at === null) {
+            return null;
+        }
+
+        return max(0, (int) $this->created_at->diffInSeconds($this->acknowledged_at));
+    }
+
+    public function resolutionSeconds(): ?int
+    {
+        if ($this->resolved_at === null || $this->created_at === null) {
+            return null;
+        }
+
+        return max(0, (int) $this->created_at->diffInSeconds($this->resolved_at));
     }
 }

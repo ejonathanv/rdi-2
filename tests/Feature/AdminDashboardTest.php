@@ -88,6 +88,7 @@ class AdminDashboardTest extends TestCase
                 ->where('kpis.incidents_today', 1)
                 ->where('kpis.urgent_incidents_today', 1)
                 ->where('kpis.panics_today', 1)
+                ->where('kpis.open_incidents', 1)
                 ->has('recent_urgents', 1)
                 ->where('recent_urgents.0.checkpoint', $checkpoint->name)
                 ->where('recent_urgents.0.patrol_id', $completed->id)
