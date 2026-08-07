@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\PatrolRunStatus;
 use App\Models\Area;
 use App\Models\Incident;
+use App\Models\PanicAlert;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
@@ -25,7 +26,8 @@ class AdminDashboardStats
      *         average_duration_seconds: int|null,
      *         average_duration_label: string|null,
      *         incidents_today: int,
-     *         urgent_incidents_today: int
+     *         urgent_incidents_today: int,
+     *         panics_today: int
      *     },
      *     recent_urgents: list<array{
      *         id: int,
@@ -68,6 +70,7 @@ class AdminDashboardStats
                     'average_duration_label' => null,
                     'incidents_today' => 0,
                     'urgent_incidents_today' => 0,
+                    'panics_today' => 0,
                 ],
                 'recent_urgents' => [],
                 'recent_incidents' => [],
@@ -114,6 +117,11 @@ class AdminDashboardStats
             ->where('created_at', '>=', $todayStart)
             ->count();
 
+        $panicsToday = PanicAlert::query()
+            ->where('area_id', $area->id)
+            ->where('created_at', '>=', $todayStart)
+            ->count();
+
         return [
             'area' => $area->only(['id', 'name', 'code']),
             'kpis' => [
@@ -124,6 +132,7 @@ class AdminDashboardStats
                 'average_duration_label' => $this->reportBuilder->formatDuration($avgSeconds),
                 'incidents_today' => $incidentsToday,
                 'urgent_incidents_today' => $urgentIncidentsToday,
+                'panics_today' => $panicsToday,
             ],
             'recent_urgents' => $this->recentUrgents($roundIds),
             'recent_incidents' => $this->recentIncidents($area->id),

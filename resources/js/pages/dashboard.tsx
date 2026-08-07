@@ -28,6 +28,7 @@ type Kpis = {
     average_duration_label: string | null;
     incidents_today: number;
     urgent_incidents_today: number;
+    panics_today: number;
 };
 
 type UrgentRow = {
@@ -190,7 +191,7 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-3">
                     <Card className="gap-3 py-4">
                         <CardHeader className="px-4">
                             <CardDescription>Incidencias hoy</CardDescription>
@@ -206,6 +207,14 @@ export default function Dashboard({
                             </CardDescription>
                             <CardTitle className="text-3xl text-destructive">
                                 {kpis.urgent_incidents_today}
+                            </CardTitle>
+                        </CardHeader>
+                    </Card>
+                    <Card className="gap-3 py-4">
+                        <CardHeader className="px-4">
+                            <CardDescription>Pánicos hoy</CardDescription>
+                            <CardTitle className="text-3xl text-destructive">
+                                {kpis.panics_today}
                             </CardTitle>
                         </CardHeader>
                     </Card>

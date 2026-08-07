@@ -112,13 +112,15 @@ Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de reco
 
 Consulta admin: pestaña **Rondines** — listado de recorridos del área → rondines realizados (estado, guardia, inicio/fin, duración) → detalle por punto (respuestas, fotos, urgente) y descarga PDF.
 
-**Panel admin:** KPIs del área activa (urgentes hoy, en curso, finalizados hoy, tiempo promedio 7 días, incidencias hoy / urgentes), lista de urgentes recientes, últimas incidencias, rondines activos y volumen de finalizados/incidencias últimos 7 días. Pestaña **Incidencias** con listado y detalle por área.
+**Panel admin:** KPIs del área activa (urgentes hoy, en curso, finalizados hoy, tiempo promedio 7 días, incidencias hoy / urgentes, pánicos hoy), lista de urgentes recientes, últimas incidencias, rondines activos y volumen de finalizados/incidencias últimos 7 días. Pestaña **Incidencias** con listado y detalle por área.
 
 **Urgente de revisión:** el guardia puede marcar un punto como urgente al enviar cuestionario o «sin novedad»; se guarda en la visita y se notifica a los contactos asignados al recorrido (`round_contact`) vía WhatsApp y/o SMS (Twilio).
 
 **Contactos:** teléfono y preferencias de notificación en usuarios; asignación por recorrido en editar recorrido.
 
 **Incidencias:** desde `/guardia` o desde un punto (`/scan/{token}/incidencia`) el guardia reporta con mensaje, hasta 3 fotos y flag urgente. OpenAI limpia el texto y asigna una **categoría** del área; si ninguna encaja, propone y crea una categoría nueva reutilizable. Se notifica a los contactos de esa categoría (`incident_category_contact`) cuando existen. Si viene del scan, la incidencia queda ligada a patrulla/punto y la visita queda con outcome `incident`.
+
+**Botón de pánico:** desde `/guardia`, con diálogo de confirmación. Registra `panic_alerts` y notifica por Twilio a todos los contactos del área activa (rol Contact). Si hay patrulla activa, la liga al alerta. Rate limit 1/min por guardia.
 
 **Categorías:** CRUD admin por área (`/incident-categories`) con código, descripción y contactos asignados.
 

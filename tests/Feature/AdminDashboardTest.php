@@ -8,6 +8,7 @@ use App\Enums\PatrolVisitOutcome;
 use App\Models\Area;
 use App\Models\Checkpoint;
 use App\Models\Incident;
+use App\Models\PanicAlert;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
@@ -68,6 +69,12 @@ class AdminDashboardTest extends TestCase
             'created_at' => now()->subMinutes(10),
         ]);
 
+        PanicAlert::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'created_at' => now()->subMinutes(5),
+        ]);
+
         $this->actingAs($admin)
             ->withSession(['current_area_id' => $area->id])
             ->get(route('dashboard'))
@@ -80,6 +87,7 @@ class AdminDashboardTest extends TestCase
                 ->where('kpis.completed_today', 1)
                 ->where('kpis.incidents_today', 1)
                 ->where('kpis.urgent_incidents_today', 1)
+                ->where('kpis.panics_today', 1)
                 ->has('recent_urgents', 1)
                 ->where('recent_urgents.0.checkpoint', $checkpoint->name)
                 ->where('recent_urgents.0.patrol_id', $completed->id)

@@ -14,6 +14,7 @@ use App\Http\Controllers\GuardPatrolController;
 use App\Http\Controllers\GuardRoundController;
 use App\Http\Controllers\IncidentCategoryController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\PanicAlertController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('current-area', [CurrentAreaController::class, 'update'])->name('current-area.update');
 
     Route::get('guardia', GuardHomeController::class)->name('guard.home');
+    Route::post('guardia/panico', [PanicAlertController::class, 'store'])
+        ->middleware('throttle:panic')
+        ->name('panic.store');
     Route::get('guardia/incidencias/crear', [IncidentController::class, 'create'])
         ->name('incidents.create');
     Route::post('guardia/incidencias', [IncidentController::class, 'store'])
