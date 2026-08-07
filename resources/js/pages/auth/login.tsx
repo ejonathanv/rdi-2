@@ -1,6 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
-import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -20,8 +19,6 @@ export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title="Iniciar sesión" />
-
-            <PasskeyVerify />
 
             <Form
                 {...store.form()}
@@ -54,7 +51,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="ml-auto text-sm"
+                                            className="ml-auto text-sm text-primary-foreground decoration-primary-foreground/40 hover:decoration-primary-foreground"
                                             tabIndex={5}
                                         >
                                             ¿Olvidaste tu contraseña?
@@ -83,7 +80,7 @@ export default function Login({ status, canResetPassword }: Props) {
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full bg-white text-primary hover:bg-white/90"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -97,7 +94,7 @@ export default function Login({ status, canResetPassword }: Props) {
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div className="mb-4 text-center text-sm font-medium text-emerald-300">
                     {status}
                 </div>
             )}
