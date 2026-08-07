@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PatrolRunStatus;
 use App\Models\Area;
+use App\Models\Incident;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
@@ -22,7 +23,9 @@ class AdminDashboardStats
      *         in_progress: int,
      *         completed_today: int,
      *         average_duration_seconds: int|null,
-     *         average_duration_label: string|null
+     *         average_duration_label: string|null,
+     *         incidents_today: int,
+     *         urgent_incidents_today: int
      *     },
      *     recent_urgents: list<array{
      *         id: int,
@@ -33,6 +36,14 @@ class AdminDashboardStats
      *         guard: string,
      *         patrol_id: int
      *     }>,
+     *     recent_incidents: list<array{
+     *         id: int,
+     *         created_at: string,
+     *         is_urgent: bool,
+     *         message: string,
+     *         category: string|null,
+     *         guard: string
+     *     }>,
      *     active_patrols: list<array{
      *         id: int,
      *         started_at: string,
@@ -40,7 +51,8 @@ class AdminDashboardStats
      *         round: array{id: int, title: string},
      *         guard: string
      *     }>,
-     *     completed_last_7_days: list<array{date: string, label: string, count: int}>
+     *     completed_last_7_days: list<array{date: string, label: string, count: int}>,
+     *     incidents_last_7_days: list<array{date: string, label: string, count: int}>
      * }
      */
     public function forArea(?Area $area): array
@@ -54,10 +66,14 @@ class AdminDashboardStats
                     'completed_today' => 0,
                     'average_duration_seconds' => null,
                     'average_duration_label' => null,
+                    'incidents_today' => 0,
+                    'urgent_incidents_today' => 0,
                 ],
                 'recent_urgents' => [],
+                'recent_incidents' => [],
                 'active_patrols' => [],
                 'completed_last_7_days' => $this->emptyLast7Days(),
+                'incidents_last_7_days' => $this->emptyLast7Days(),
             ];
         }
 
@@ -87,6 +103,17 @@ class AdminDashboardStats
 
         $avgSeconds = $this->averageCompletedDurationSeconds($roundIds, $weekStart);
 
+        $incidentsToday = Incident::query()
+            ->where('area_id', $area->id)
+            ->where('created_at', '>=', $todayStart)
+            ->count();
+
+        $urgentIncidentsToday = Incident::query()
+            ->where('area_id', $area->id)
+            ->where('is_urgent', true)
+            ->where('created_at', '>=', $todayStart)
+            ->count();
+
         return [
             'area' => $area->only(['id', 'name', 'code']),
             'kpis' => [
@@ -95,10 +122,14 @@ class AdminDashboardStats
                 'completed_today' => $completedToday,
                 'average_duration_seconds' => $avgSeconds,
                 'average_duration_label' => $this->reportBuilder->formatDuration($avgSeconds),
+                'incidents_today' => $incidentsToday,
+                'urgent_incidents_today' => $urgentIncidentsToday,
             ],
             'recent_urgents' => $this->recentUrgents($roundIds),
+            'recent_incidents' => $this->recentIncidents($area->id),
             'active_patrols' => $this->activePatrols($roundIds),
             'completed_last_7_days' => $this->completedLast7Days($roundIds),
+            'incidents_last_7_days' => $this->incidentsLast7Days($area->id),
         ];
     }
 
@@ -160,6 +191,29 @@ class AdminDashboardStats
     }
 
     /**
+     * @return list<array{id: int, created_at: string, is_urgent: bool, message: string, category: string|null, guard: string}>
+     */
+    private function recentIncidents(int $areaId): array
+    {
+        return Incident::query()
+            ->where('area_id', $areaId)
+            ->with(['user:id,name', 'category:id,name'])
+            ->latest()
+            ->limit(5)
+            ->get()
+            ->map(fn (Incident $incident) => [
+                'id' => $incident->id,
+                'created_at' => $incident->created_at->toIso8601String(),
+                'is_urgent' => $incident->is_urgent,
+                'message' => $incident->message_cleaned ?: $incident->message_raw,
+                'category' => $incident->category?->name,
+                'guard' => $incident->user->name,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
      * @param  Collection<int, int>  $roundIds
      * @return list<array{id: int, started_at: string, duration_so_far_label: string, round: array{id: int, title: string}, guard: string}>
      */
@@ -212,6 +266,39 @@ class AdminDashboardStats
             ->where('finished_at', '>=', now()->subDays(6)->startOfDay())
             ->get(['finished_at'])
             ->groupBy(fn (PatrolRun $run) => $run->finished_at?->toDateString())
+            ->map->count();
+
+        foreach ($counts as $date => $count) {
+            if ($days->has($date)) {
+                $day = $days->get($date);
+                $day['count'] = $count;
+                $days->put($date, $day);
+            }
+        }
+
+        return $days->values()->all();
+    }
+
+    /**
+     * @return list<array{date: string, label: string, count: int}>
+     */
+    private function incidentsLast7Days(int $areaId): array
+    {
+        $days = collect(range(6, 0))->map(function (int $offset) {
+            $day = now()->subDays($offset)->startOfDay();
+
+            return [
+                'date' => $day->toDateString(),
+                'label' => $day->locale('es')->isoFormat('dd D'),
+                'count' => 0,
+            ];
+        })->keyBy('date');
+
+        $counts = Incident::query()
+            ->where('area_id', $areaId)
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+            ->get(['created_at'])
+            ->groupBy(fn (Incident $incident) => $incident->created_at?->toDateString())
             ->map->count();
 
         foreach ($counts as $date => $count) {

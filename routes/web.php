@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\AdminRondinController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\CheckpointController;
@@ -64,6 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('rondines.patrols.show');
         Route::get('rondines/{round}/patrullas/{patrol}/pdf', [AdminRondinController::class, 'downloadPdf'])
             ->name('rondines.patrols.pdf');
+
+        Route::get('incidencias', [AdminIncidentController::class, 'index'])->name('incidencias.index');
+        Route::get('incidencias/{incident}', [AdminIncidentController::class, 'show'])->name('incidencias.show');
 
         Route::post('rounds/{round}/checkpoints', [CheckpointController::class, 'store'])
             ->name('rounds.checkpoints.store');

@@ -112,7 +112,7 @@ Panel guardia: `/guardia` — acciones (iniciar recorrido); listado solo de reco
 
 Consulta admin: pestaña **Rondines** — listado de recorridos del área → rondines realizados (estado, guardia, inicio/fin, duración) → detalle por punto (respuestas, fotos, urgente) y descarga PDF.
 
-**Panel admin:** KPIs del área activa (urgentes hoy, en curso, finalizados hoy, tiempo promedio 7 días), lista de urgentes recientes, rondines activos y volumen de finalizados últimos 7 días.
+**Panel admin:** KPIs del área activa (urgentes hoy, en curso, finalizados hoy, tiempo promedio 7 días, incidencias hoy / urgentes), lista de urgentes recientes, últimas incidencias, rondines activos y volumen de finalizados/incidencias últimos 7 días. Pestaña **Incidencias** con listado y detalle por área.
 
 **Urgente de revisión:** el guardia puede marcar un punto como urgente al enviar cuestionario o «sin novedad»; se guarda en la visita y se notifica a los contactos asignados al recorrido (`round_contact`) vía WhatsApp y/o SMS (Twilio).
 

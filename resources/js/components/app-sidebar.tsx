@@ -5,6 +5,7 @@ import {
     LayoutGrid,
     Route,
     Tags,
+    TriangleAlert,
     Users,
 } from 'lucide-react';
 import { useMemo } from 'react';
@@ -31,6 +32,7 @@ import { update as updateCurrentArea } from '@/routes/current-area';
 import { dashboard } from '@/routes';
 import { index as areasIndex } from '@/routes/areas';
 import { home as guardHome } from '@/routes/guard';
+import { index as incidenciasIndex } from '@/routes/incidencias';
 import { index as incidentCategoriesIndex } from '@/routes/incident-categories';
 import { index as rondinesIndex } from '@/routes/rondines';
 import { index as roundsIndex } from '@/routes/rounds';
@@ -100,6 +102,12 @@ export function AppSidebar() {
                 title: 'Rondines',
                 href: rondinesIndex(),
                 icon: ClipboardList,
+            });
+
+            items.push({
+                title: 'Incidencias',
+                href: incidenciasIndex(),
+                icon: TriangleAlert,
             });
         }
 

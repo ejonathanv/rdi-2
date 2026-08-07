@@ -7,6 +7,7 @@ use App\Enums\PatrolRunStatus;
 use App\Enums\PatrolVisitOutcome;
 use App\Models\Area;
 use App\Models\Checkpoint;
+use App\Models\Incident;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
@@ -58,6 +59,15 @@ class AdminDashboardTest extends TestCase
             'reviewed_at' => now()->subMinutes(30),
         ]);
 
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'message_raw' => 'derrame',
+            'message_cleaned' => 'Se reportó un derrame.',
+            'is_urgent' => true,
+            'created_at' => now()->subMinutes(10),
+        ]);
+
         $this->actingAs($admin)
             ->withSession(['current_area_id' => $area->id])
             ->get(route('dashboard'))
@@ -68,12 +78,17 @@ class AdminDashboardTest extends TestCase
                 ->where('kpis.urgents_today', 1)
                 ->where('kpis.in_progress', 1)
                 ->where('kpis.completed_today', 1)
+                ->where('kpis.incidents_today', 1)
+                ->where('kpis.urgent_incidents_today', 1)
                 ->has('recent_urgents', 1)
                 ->where('recent_urgents.0.checkpoint', $checkpoint->name)
                 ->where('recent_urgents.0.patrol_id', $completed->id)
+                ->has('recent_incidents', 1)
+                ->where('recent_incidents.0.message', 'Se reportó un derrame.')
                 ->has('active_patrols', 1)
                 ->where('active_patrols.0.id', $active->id)
-                ->has('completed_last_7_days', 7));
+                ->has('completed_last_7_days', 7)
+                ->has('incidents_last_7_days', 7));
     }
 
     public function test_dashboard_ignores_other_area_data(): void
