@@ -60,15 +60,7 @@ class IncidentReporter
 
         $result = $this->aiProcessor->process($incident->message_raw, $area);
 
-        $category = null;
-
-        if ($result['category_code']) {
-            $category = IncidentCategory::query()
-                ->where('area_id', $area->id)
-                ->where('code', $result['category_code'])
-                ->where('is_active', true)
-                ->first();
-        }
+        $category = $this->resolveCategory($area, $result);
 
         $incident->update([
             'message_cleaned' => $result['cleaned_message'],
@@ -81,5 +73,51 @@ class IncidentReporter
         }
 
         return $incident->fresh(['category', 'photos', 'checkpoint']);
+    }
+
+    /**
+     * @param  array{
+     *     cleaned_message: string,
+     *     category_code: string|null,
+     *     new_category: array{code: string, name: string, description: string|null}|null
+     * }  $result
+     */
+    private function resolveCategory(Area $area, array $result): ?IncidentCategory
+    {
+        if ($result['category_code']) {
+            $existing = IncidentCategory::query()
+                ->where('area_id', $area->id)
+                ->where('code', $result['category_code'])
+                ->where('is_active', true)
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+        }
+
+        $proposed = $result['new_category'] ?? null;
+
+        if ($proposed === null) {
+            return null;
+        }
+
+        $category = IncidentCategory::query()->firstOrCreate(
+            [
+                'area_id' => $area->id,
+                'code' => $proposed['code'],
+            ],
+            [
+                'name' => $proposed['name'],
+                'description' => $proposed['description'],
+                'is_active' => true,
+            ],
+        );
+
+        if (! $category->is_active) {
+            $category->update(['is_active' => true]);
+        }
+
+        return $category->fresh();
     }
 }

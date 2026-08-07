@@ -34,6 +34,7 @@ class IncidentReportTest extends TestCase
                 ->andReturn([
                     'cleaned_message' => 'Se observó un derrame en el pasillo.',
                     'category_code' => $category->code,
+                    'new_category' => null,
                 ]);
         });
 
@@ -84,6 +85,7 @@ class IncidentReportTest extends TestCase
                 ->andReturn([
                     'cleaned_message' => 'Puerta forzada en el almacén.',
                     'category_code' => $category->code,
+                    'new_category' => null,
                 ]);
         });
 
@@ -125,6 +127,7 @@ class IncidentReportTest extends TestCase
                 ->andReturn([
                     'cleaned_message' => 'mensaje crudo',
                     'category_code' => null,
+                    'new_category' => null,
                 ]);
         });
 
@@ -140,6 +143,52 @@ class IncidentReportTest extends TestCase
         $this->assertDatabaseHas('incidents', [
             'message_raw' => 'mensaje crudo',
             'incident_category_id' => null,
+        ]);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_ai_can_create_new_category_when_none_match(): void
+    {
+        [$guard, $area] = $this->guardWithCategoryAndContact();
+
+        $this->mock(IncidentAiProcessor::class, function ($mock): void {
+            $mock->shouldReceive('process')
+                ->once()
+                ->andReturn([
+                    'cleaned_message' => 'Se detectó una fuga de gas en el área de cocina.',
+                    'category_code' => null,
+                    'new_category' => [
+                        'code' => 'FUGA_GAS',
+                        'name' => 'Fuga de gas',
+                        'description' => 'Olores o fugas de gas detectadas en el sitio.',
+                    ],
+                ]);
+        });
+
+        Http::fake();
+
+        $this->actingAs($guard)
+            ->withSession(['current_area_id' => $area->id])
+            ->post(route('incidents.store'), [
+                'message' => 'huele a gas en cocina',
+            ])
+            ->assertRedirect(route('guard.home'));
+
+        $category = IncidentCategory::query()
+            ->where('area_id', $area->id)
+            ->where('code', 'FUGA_GAS')
+            ->firstOrFail();
+
+        $this->assertSame('FUGA DE GAS', $category->name);
+        $this->assertSame(
+            'Olores o fugas de gas detectadas en el sitio.',
+            $category->description,
+        );
+
+        $this->assertDatabaseHas('incidents', [
+            'message_raw' => 'huele a gas en cocina',
+            'incident_category_id' => $category->id,
         ]);
 
         Http::assertNothingSent();

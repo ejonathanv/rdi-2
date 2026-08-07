@@ -51,7 +51,7 @@ class AdminIncidentTest extends TestCase
                 ->component('incidencias/index')
                 ->has('incidents', 1)
                 ->where('incidents.0.id', $incident->id)
-                ->where('incidents.0.category', 'Robo'));
+                ->where('incidents.0.category', 'ROBO'));
 
         $this->actingAs($admin)
             ->withSession(['current_area_id' => $area->id])

@@ -31,6 +31,7 @@ class IncidentCategoryTest extends TestCase
         $category = IncidentCategory::query()->firstOrFail();
 
         $this->assertSame('ROBO', $category->code);
+        $this->assertSame('ROBO', $category->name);
 
         $contact = User::factory()->create([
             'phone' => '5598765432',
