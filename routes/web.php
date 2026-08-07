@@ -14,10 +14,13 @@ use App\Http\Controllers\GuardPatrolController;
 use App\Http\Controllers\GuardRoundController;
 use App\Http\Controllers\IncidentCategoryController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\PanicAlertController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('landingpage', LandingPageController::class)->name('landingpage');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('/', '/dashboard')->name('home');

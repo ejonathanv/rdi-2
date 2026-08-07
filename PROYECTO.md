@@ -124,6 +124,8 @@ Consulta admin: pestaña **Rondines** — listado de recorridos del área → ro
 
 **Categorías:** CRUD admin por área (`/incident-categories`) con código, descripción y contactos asignados.
 
+**Landing pública:** `/landingpage` — página de marketing SaaS con capacidades, flujo y beneficios (placeholders de imagen sustituibles).
+
 ## Dominio futuro
 
 Ver checklist vivo en [`ROADMAP.md`](ROADMAP.md) (estados de incidencia, Twilio producción, pánicos, reportes, panel contactos, PWA, GPS, SLA, etc.).
