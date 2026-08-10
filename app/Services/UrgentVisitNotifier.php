@@ -3,11 +3,16 @@
 namespace App\Services;
 
 use App\Models\PatrolCheckpointVisit;
+use App\Notifications\UrgentVisitAlert;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class UrgentVisitNotifier
 {
-    public function __construct(private TwilioMessageSender $twilio) {}
+    public function __construct(
+        private TwilioMessageSender $twilio,
+        private AreaNotificationRecipients $recipients,
+    ) {}
 
     public function notify(PatrolCheckpointVisit $visit): void
     {
@@ -19,11 +24,20 @@ class UrgentVisitNotifier
             'checkpoint',
             'patrolRun.user',
             'patrolRun.round.contacts',
+            'patrolRun.round.area',
         ]);
 
         $message = $this->buildMessage($visit);
+        $round = $visit->patrolRun->round;
+        $actor = $visit->patrolRun->user;
 
-        $contacts = $visit->patrolRun->round->contacts;
+        $appRecipients = $this->recipients->forArea($round->area_id, $actor);
+
+        if ($appRecipients->isNotEmpty()) {
+            Notification::send($appRecipients, new UrgentVisitAlert($visit));
+        }
+
+        $contacts = $round->contacts;
 
         if ($contacts->isEmpty()) {
             Log::warning('Punto urgente sin contactos asignados al recorrido.', [

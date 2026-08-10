@@ -95,6 +95,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'currentArea' => $currentArea,
             'availableAreas' => $availableAreas,
+            'unreadNotificationsCount' => $user ? $user->unreadNotifications()->count() : 0,
+            'hasPushSubscription' => $user ? $user->pushSubscriptions()->exists() : false,
+            'vapidPublicKey' => config('webpush.vapid.public_key'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

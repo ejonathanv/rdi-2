@@ -13,6 +13,9 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            unreadNotificationsCount: number;
+            hasPushSubscription: boolean;
+            vapidPublicKey: string | null;
             [key: string]: unknown;
         };
     }

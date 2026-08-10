@@ -5,12 +5,17 @@ namespace App\Services;
 use App\Enums\AreaRole;
 use App\Models\Incident;
 use App\Models\User;
+use App\Notifications\IncidentCreatedAlert;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class IncidentNotifier
 {
-    public function __construct(private TwilioMessageSender $twilio) {}
+    public function __construct(
+        private TwilioMessageSender $twilio,
+        private AreaNotificationRecipients $recipients,
+    ) {}
 
     public function notify(Incident $incident): void
     {
@@ -28,6 +33,12 @@ class IncidentNotifier
             ]);
 
             return;
+        }
+
+        $appRecipients = $this->recipients->forArea($incident->area_id, $incident->user);
+
+        if ($appRecipients->isNotEmpty()) {
+            Notification::send($appRecipients, new IncidentCreatedAlert($incident));
         }
 
         $contacts = $this->resolveContacts($incident);

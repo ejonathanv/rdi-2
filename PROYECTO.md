@@ -122,6 +122,8 @@ Consulta admin: pestaña **Rondines** — listado de recorridos del área → ro
 
 **Botón de pánico:** desde `/guardia`, con diálogo de confirmación. Registra `panic_alerts` y notifica por Twilio a todos los contactos del área activa (rol Contact). Si hay patrulla activa, la liga al alerta. Rate limit 1/min por guardia.
 
+**Notificaciones in-app + Web Push:** además de Twilio, las alertas operativas (pánico, incidencia, punto urgente, cierre) crean notificaciones en el inbox (campana) y, si el usuario autorizó el navegador, un Web Push (VAPID). Destinatarios: todos los usuarios del área excepto el actor.
+
 **Categorías:** CRUD admin por área (`/incident-categories`) con código, descripción y contactos asignados.
 
 **Landing pública:** `/landingpage` — página de marketing SaaS con capacidades, flujo y beneficios (placeholders de imagen sustituibles).

@@ -5,11 +5,16 @@ namespace App\Services;
 use App\Enums\AreaRole;
 use App\Models\PanicAlert;
 use App\Models\User;
+use App\Notifications\PanicAlertNotification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class PanicAlertNotifier
 {
-    public function __construct(private TwilioMessageSender $twilio) {}
+    public function __construct(
+        private TwilioMessageSender $twilio,
+        private AreaNotificationRecipients $recipients,
+    ) {}
 
     public function notify(PanicAlert $alert): void
     {
@@ -18,6 +23,12 @@ class PanicAlertNotifier
             'area',
             'patrolRun.round',
         ]);
+
+        $appRecipients = $this->recipients->forArea($alert->area_id, $alert->user);
+
+        if ($appRecipients->isNotEmpty()) {
+            Notification::send($appRecipients, new PanicAlertNotification($alert));
+        }
 
         $contacts = User::query()
             ->whereHas(

@@ -56,6 +56,16 @@ Hoy se registra y se notifica; falta gestionar la respuesta.
 
 **Por qué:** en producción WhatsApp exige plantillas para mensajes iniciados por el negocio; las colas evitan perder alertas.
 
+### 2b. Canal in-app + Web Push (puente mientras Twilio no esté listo)
+
+- [x] Inbox in-app (campana) para todos los roles
+- [x] Web Push (VAPID) con service worker
+- [x] Suscripción por usuario autenticado
+- [x] Alertas operativas: pánico, incidencia, punto urgente, cierre
+- [x] Destinatarios: todos los usuarios del área (excepto el actor)
+
+**Por qué:** permite recibir alertas en el navegador sin depender de WhatsApp/SMS aprobados.
+
 ---
 
 ## Prioridad 3 — Emergencias trazables

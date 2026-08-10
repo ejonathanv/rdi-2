@@ -5,12 +5,17 @@ namespace App\Services;
 use App\Enums\AreaRole;
 use App\Models\Incident;
 use App\Models\User;
+use App\Notifications\IncidentClosedAlert;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class IncidentClosureNotifier
 {
-    public function __construct(private TwilioMessageSender $twilio) {}
+    public function __construct(
+        private TwilioMessageSender $twilio,
+        private AreaNotificationRecipients $recipients,
+    ) {}
 
     public function notify(Incident $incident): void
     {
@@ -23,10 +28,23 @@ class IncidentClosureNotifier
             'patrolRun.round',
         ]);
 
-        $recipients = $this->resolveRecipients($incident);
+        $except = $incident->resolvedBy;
+        $appRecipients = $this->recipients->forArea($incident->area_id, $except);
+
+        if ($incident->user && (! $except || $incident->user->isNot($except))) {
+            if (! $appRecipients->contains('id', $incident->user->id)) {
+                $appRecipients->push($incident->user);
+            }
+        }
+
+        if ($appRecipients->isNotEmpty()) {
+            Notification::send($appRecipients->unique('id')->values(), new IncidentClosedAlert($incident));
+        }
+
+        $recipients = $this->resolveTwilioRecipients($incident);
 
         if ($recipients->isEmpty()) {
-            Log::warning('Cierre de incidencia sin destinatarios.', [
+            Log::warning('Cierre de incidencia sin destinatarios Twilio.', [
                 'incident_id' => $incident->id,
                 'area_id' => $incident->area_id,
             ]);
@@ -44,7 +62,7 @@ class IncidentClosureNotifier
     /**
      * @return Collection<int, User>
      */
-    private function resolveRecipients(Incident $incident): Collection
+    private function resolveTwilioRecipients(Incident $incident): Collection
     {
         $recipients = collect();
 
