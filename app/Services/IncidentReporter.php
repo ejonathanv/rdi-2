@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class IncidentReporter
 {
+    use Concerns\SafelyRunsSideEffects;
+
     public function __construct(
         private IncidentPhotoStore $photoStore,
         private IncidentAiProcessor $aiProcessor,
@@ -60,21 +62,23 @@ class IncidentReporter
             return $incident;
         });
 
-        $result = $this->aiProcessor->process($incident->message_raw, $area);
+        $this->safely('post-proceso de incidencia (IA/categoría/aviso)', function () use ($incident, $area): void {
+            $result = $this->aiProcessor->process($incident->message_raw, $area);
 
-        $category = $this->resolveCategory($area, $result);
+            $category = $this->resolveCategory($area, $result);
 
-        $incident->update([
-            'message_cleaned' => $result['cleaned_message'],
-            'incident_category_id' => $category?->id,
-            'categorized_at' => $category ? now() : null,
-        ]);
+            $incident->update([
+                'message_cleaned' => $result['cleaned_message'],
+                'incident_category_id' => $category?->id,
+                'categorized_at' => $category ? now() : null,
+            ]);
 
-        if ($category) {
-            $this->notifier->notify($incident->fresh());
-        }
+            if ($category) {
+                $this->notifier->notify($incident->fresh());
+            }
+        });
 
-        return $incident->fresh(['category', 'photos', 'checkpoint']);
+        return $incident->fresh(['category', 'photos', 'checkpoint']) ?? $incident;
     }
 
     /**

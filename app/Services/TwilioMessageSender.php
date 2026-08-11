@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class TwilioMessageSender
 {
@@ -76,14 +78,26 @@ class TwilioMessageSender
             return;
         }
 
-        $response = Http::withBasicAuth($sid, $token)
-            ->asForm()
-            ->acceptJson()
-            ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json", [
-                'To' => $to,
-                'From' => $from,
-                'Body' => $body,
+        try {
+            $response = Http::withBasicAuth($sid, $token)
+                ->asForm()
+                ->acceptJson()
+                ->timeout(8)
+                ->connectTimeout(3)
+                ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json", [
+                    'To' => $to,
+                    'From' => $from,
+                    'Body' => $body,
+                ]);
+        } catch (ConnectionException|Throwable $exception) {
+            Log::error("Error de conexión al enviar {$context} por {$channel}.", [
+                'to' => $to,
+                'message' => $exception->getMessage(),
+                'exception' => $exception::class,
             ]);
+
+            return;
+        }
 
         if ($response->failed()) {
             Log::error("Error al enviar {$context} por {$channel}.", [
@@ -107,10 +121,22 @@ class TwilioMessageSender
             return;
         }
 
-        usleep(1_500_000);
+        try {
+            usleep(1_500_000);
 
-        $statusResponse = Http::withBasicAuth($sid, $token)
-            ->get("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages/{$messageSid}.json");
+            $statusResponse = Http::withBasicAuth($sid, $token)
+                ->timeout(8)
+                ->connectTimeout(3)
+                ->get("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages/{$messageSid}.json");
+        } catch (ConnectionException|Throwable $exception) {
+            Log::warning("No se pudo consultar estado de {$context} por {$channel}.", [
+                'to' => $to,
+                'sid' => $messageSid,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return;
+        }
 
         if ($statusResponse->failed()) {
             return;

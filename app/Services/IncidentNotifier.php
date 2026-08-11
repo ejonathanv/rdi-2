@@ -6,12 +6,15 @@ use App\Enums\AreaRole;
 use App\Models\Incident;
 use App\Models\User;
 use App\Notifications\IncidentCreatedAlert;
+use App\Services\Concerns\SafelyRunsSideEffects;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class IncidentNotifier
 {
+    use SafelyRunsSideEffects;
+
     public function __construct(
         private TwilioMessageSender $twilio,
         private AreaNotificationRecipients $recipients,
@@ -19,45 +22,47 @@ class IncidentNotifier
 
     public function notify(Incident $incident): void
     {
-        $incident->loadMissing([
-            'user',
-            'category.contacts',
-            'checkpoint',
-            'patrolRun.round',
-            'area',
-        ]);
-
-        if ($incident->category === null) {
-            Log::info('Incidencia sin categoría; no se notifica.', [
-                'incident_id' => $incident->id,
+        $this->safely('notificación de incidencia', function () use ($incident): void {
+            $incident->loadMissing([
+                'user',
+                'category.contacts',
+                'checkpoint',
+                'patrolRun.round',
+                'area',
             ]);
 
-            return;
-        }
+            if ($incident->category === null) {
+                Log::info('Incidencia sin categoría; no se notifica.', [
+                    'incident_id' => $incident->id,
+                ]);
 
-        $appRecipients = $this->recipients->forArea($incident->area_id, $incident->user);
+                return;
+            }
 
-        if ($appRecipients->isNotEmpty()) {
-            Notification::send($appRecipients, new IncidentCreatedAlert($incident));
-        }
+            $appRecipients = $this->recipients->forArea($incident->area_id, $incident->user);
 
-        $contacts = $this->resolveContacts($incident);
+            if ($appRecipients->isNotEmpty()) {
+                Notification::send($appRecipients, new IncidentCreatedAlert($incident));
+            }
 
-        if ($contacts->isEmpty()) {
-            Log::warning('Incidencia sin contactos de categoría ni del área.', [
-                'incident_id' => $incident->id,
-                'category_id' => $incident->category->id,
-                'area_id' => $incident->area_id,
-            ]);
+            $contacts = $this->resolveContacts($incident);
 
-            return;
-        }
+            if ($contacts->isEmpty()) {
+                Log::warning('Incidencia sin contactos de categoría ni del área.', [
+                    'incident_id' => $incident->id,
+                    'category_id' => $incident->category->id,
+                    'area_id' => $incident->area_id,
+                ]);
 
-        $message = $this->buildMessage($incident);
+                return;
+            }
 
-        foreach ($contacts as $contact) {
-            $this->twilio->notifyContact($contact, $message, 'Alerta de incidencia');
-        }
+            $message = $this->buildMessage($incident);
+
+            foreach ($contacts as $contact) {
+                $this->twilio->notifyContact($contact, $message, 'Alerta de incidencia');
+            }
+        });
     }
 
     /**

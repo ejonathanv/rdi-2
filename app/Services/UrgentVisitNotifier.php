@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Models\PatrolCheckpointVisit;
 use App\Notifications\UrgentVisitAlert;
+use App\Services\Concerns\SafelyRunsSideEffects;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class UrgentVisitNotifier
 {
+    use SafelyRunsSideEffects;
+
     public function __construct(
         private TwilioMessageSender $twilio,
         private AreaNotificationRecipients $recipients,
@@ -20,37 +23,39 @@ class UrgentVisitNotifier
             return;
         }
 
-        $visit->loadMissing([
-            'checkpoint',
-            'patrolRun.user',
-            'patrolRun.round.contacts',
-            'patrolRun.round.area',
-        ]);
-
-        $message = $this->buildMessage($visit);
-        $round = $visit->patrolRun->round;
-        $actor = $visit->patrolRun->user;
-
-        $appRecipients = $this->recipients->forArea($round->area_id, $actor);
-
-        if ($appRecipients->isNotEmpty()) {
-            Notification::send($appRecipients, new UrgentVisitAlert($visit));
-        }
-
-        $contacts = $round->contacts;
-
-        if ($contacts->isEmpty()) {
-            Log::warning('Punto urgente sin contactos asignados al recorrido.', [
-                'visit_id' => $visit->id,
-                'round_id' => $visit->patrolRun->round_id,
+        $this->safely('notificación de punto urgente', function () use ($visit): void {
+            $visit->loadMissing([
+                'checkpoint',
+                'patrolRun.user',
+                'patrolRun.round.contacts',
+                'patrolRun.round.area',
             ]);
 
-            return;
-        }
+            $message = $this->buildMessage($visit);
+            $round = $visit->patrolRun->round;
+            $actor = $visit->patrolRun->user;
 
-        foreach ($contacts as $contact) {
-            $this->twilio->notifyContact($contact, $message, 'Alerta urgente de punto');
-        }
+            $appRecipients = $this->recipients->forArea($round->area_id, $actor);
+
+            if ($appRecipients->isNotEmpty()) {
+                Notification::send($appRecipients, new UrgentVisitAlert($visit));
+            }
+
+            $contacts = $round->contacts;
+
+            if ($contacts->isEmpty()) {
+                Log::warning('Punto urgente sin contactos asignados al recorrido.', [
+                    'visit_id' => $visit->id,
+                    'round_id' => $visit->patrolRun->round_id,
+                ]);
+
+                return;
+            }
+
+            foreach ($contacts as $contact) {
+                $this->twilio->notifyContact($contact, $message, 'Alerta urgente de punto');
+            }
+        });
     }
 
     private function buildMessage(PatrolCheckpointVisit $visit): string
