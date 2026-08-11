@@ -121,8 +121,8 @@ class IncidentLifecycleTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('incidencias/index')
-                ->has('incidents', 1)
-                ->where('incidents.0.status', IncidentStatus::Nueva->value)
+                ->has('incidents.data', 1)
+                ->where('incidents.data.0.status', IncidentStatus::Nueva->value)
                 ->where('filters.status', IncidentStatus::Nueva->value));
     }
 

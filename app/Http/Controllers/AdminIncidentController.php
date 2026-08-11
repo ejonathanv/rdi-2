@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\IncidentStatus;
+use App\Http\Requests\Incident\IndexIncidentsRequest;
 use App\Http\Requests\Incident\UpdateIncidentStatusRequest;
 use App\Models\Area;
 use App\Models\Incident;
+use App\Models\IncidentCategory;
 use App\Services\IncidentStatusUpdater;
 use App\Services\PatrolReportBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,17 +23,18 @@ class AdminIncidentController extends Controller
         private PatrolReportBuilder $reportBuilder,
     ) {}
 
-    public function index(Request $request): Response
+    public function index(IndexIncidentsRequest $request): Response
     {
-        $this->authorize('viewAny', Incident::class);
-
         $user = $request->user();
         $currentArea = $this->resolveCurrentArea($request);
 
         abort_unless($currentArea && $user->canViewAreaOperations($currentArea), 403);
 
-        $statusFilter = $request->string('status')->toString();
-        $status = IncidentStatus::tryFrom($statusFilter);
+        $validated = $request->validated();
+        $status = IncidentStatus::tryFrom($validated['status'] ?? '');
+        $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
+        $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
+        $categoryId = isset($validated['category_id']) ? (int) $validated['category_id'] : null;
 
         $incidents = Incident::query()
             ->where('area_id', $currentArea->id)
@@ -42,15 +46,33 @@ class AdminIncidentController extends Controller
                 'patrolRun.round:id,title',
             ])
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($from, fn ($query) => $query->where('created_at', '>=', $from))
+            ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
+            ->when($categoryId, fn ($query) => $query->where('incident_category_id', $categoryId))
             ->latest()
-            ->get()
-            ->map(fn (Incident $incident) => $this->summarize($incident));
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn (Incident $incident) => $this->summarize($incident));
+
+        $categoryOptions = IncidentCategory::query()
+            ->where('area_id', $currentArea->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code'])
+            ->map(fn (IncidentCategory $category) => [
+                'value' => $category->id,
+                'label' => $category->name,
+            ])
+            ->values()
+            ->all();
 
         return Inertia::render('incidencias/index', [
             'area' => $currentArea->only(['id', 'name', 'code']),
             'incidents' => $incidents,
             'filters' => [
                 'status' => $status?->value,
+                'from' => $validated['from'] ?? null,
+                'to' => $validated['to'] ?? null,
+                'category_id' => $categoryId,
             ],
             'status_options' => collect(IncidentStatus::cases())
                 ->map(fn (IncidentStatus $item) => [
@@ -59,6 +81,7 @@ class AdminIncidentController extends Controller
                 ])
                 ->values()
                 ->all(),
+            'category_options' => $categoryOptions,
         ]);
     }
 

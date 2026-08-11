@@ -49,9 +49,9 @@ class AdminIncidentTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('incidencias/index')
-                ->has('incidents', 1)
-                ->where('incidents.0.id', $incident->id)
-                ->where('incidents.0.category', 'ROBO'));
+                ->has('incidents.data', 1)
+                ->where('incidents.data.0.id', $incident->id)
+                ->where('incidents.data.0.category', 'ROBO'));
 
         $this->actingAs($admin)
             ->withSession(['current_area_id' => $area->id])

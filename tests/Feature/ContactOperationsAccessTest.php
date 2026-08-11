@@ -44,7 +44,7 @@ class ContactOperationsAccessTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('incidencias/index')
-                ->has('incidents', 1));
+                ->has('incidents.data', 1));
 
         $this->actingAs($contact)
             ->withSession(['current_area_id' => $area->id])

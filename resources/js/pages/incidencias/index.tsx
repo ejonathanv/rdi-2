@@ -3,6 +3,15 @@ import Heading from '@/components/heading';
 import { IncidentStatusBadge } from '@/components/incident-status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { index as incidenciasIndex, show as incidenciasShow } from '@/routes/incidencias';
 
 type AreaSummary = {
@@ -14,6 +23,18 @@ type AreaSummary = {
 type StatusOption = {
     value: string;
     label: string;
+};
+
+type CategoryOption = {
+    value: number;
+    label: string;
+};
+
+type Filters = {
+    status: string | null;
+    from: string | null;
+    to: string | null;
+    category_id: number | null;
 };
 
 type IncidentRow = {
@@ -30,6 +51,22 @@ type IncidentRow = {
     round: string | null;
 };
 
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type PaginatedIncidents = {
+    data: IncidentRow[];
+    links: PaginationLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+    current_page: number;
+    last_page: number;
+};
+
 function formatDateTime(value: string | null): string {
     if (!value) {
         return '—';
@@ -41,26 +78,58 @@ function formatDateTime(value: string | null): string {
     });
 }
 
+function buildQuery(filters: Filters): Record<string, string> {
+    const query: Record<string, string> = {};
+
+    if (filters.status) {
+        query.status = filters.status;
+    }
+
+    if (filters.from) {
+        query.from = filters.from;
+    }
+
+    if (filters.to) {
+        query.to = filters.to;
+    }
+
+    if (filters.category_id) {
+        query.category_id = String(filters.category_id);
+    }
+
+    return query;
+}
+
 export default function IncidenciasIndex({
     area,
     incidents,
     filters,
     status_options,
+    category_options,
 }: {
     area: AreaSummary;
-    incidents: IncidentRow[];
-    filters: { status: string | null };
+    incidents: PaginatedIncidents;
+    filters: Filters;
     status_options: StatusOption[];
+    category_options: CategoryOption[];
 }) {
-    const setStatusFilter = (value: string | null) => {
+    const applyFilters = (overrides: Partial<Filters>) => {
         router.get(
             incidenciasIndex.url({
-                query: value ? { status: value } : {},
+                query: buildQuery({ ...filters, ...overrides }),
             }),
             {},
             { preserveState: true, replace: true },
         );
     };
+
+    const clearExtraFilters = () => {
+        applyFilters({ from: null, to: null, category_id: null });
+    };
+
+    const hasExtraFilters = Boolean(
+        filters.from || filters.to || filters.category_id,
+    );
 
     return (
         <>
@@ -77,7 +146,7 @@ export default function IncidenciasIndex({
                         type="button"
                         size="sm"
                         variant={filters.status ? 'outline' : 'default'}
-                        onClick={() => setStatusFilter(null)}
+                        onClick={() => applyFilters({ status: null })}
                     >
                         Todas
                     </Button>
@@ -91,11 +160,90 @@ export default function IncidenciasIndex({
                                     ? 'default'
                                     : 'outline'
                             }
-                            onClick={() => setStatusFilter(option.value)}
+                            onClick={() =>
+                                applyFilters({ status: option.value })
+                            }
                         >
                             {option.label}
                         </Button>
                     ))}
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                    <div className="grid gap-2">
+                        <Label htmlFor="filter-from">Desde</Label>
+                        <Input
+                            id="filter-from"
+                            type="date"
+                            value={filters.from ?? ''}
+                            onChange={(event) =>
+                                applyFilters({
+                                    from: event.target.value || null,
+                                })
+                            }
+                            className="w-full sm:w-auto"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="filter-to">Hasta</Label>
+                        <Input
+                            id="filter-to"
+                            type="date"
+                            value={filters.to ?? ''}
+                            onChange={(event) =>
+                                applyFilters({
+                                    to: event.target.value || null,
+                                })
+                            }
+                            className="w-full sm:w-auto"
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="filter-category">Categoría</Label>
+                        <Select
+                            value={
+                                filters.category_id
+                                    ? String(filters.category_id)
+                                    : 'all'
+                            }
+                            onValueChange={(value) =>
+                                applyFilters({
+                                    category_id:
+                                        value === 'all' ? null : Number(value),
+                                })
+                            }
+                        >
+                            <SelectTrigger
+                                id="filter-category"
+                                className="w-full sm:w-56"
+                            >
+                                <SelectValue placeholder="Todas las categorías" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    Todas las categorías
+                                </SelectItem>
+                                {category_options.map((option) => (
+                                    <SelectItem
+                                        key={option.value}
+                                        value={String(option.value)}
+                                    >
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {hasExtraFilters && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearExtraFilters}
+                        >
+                            Limpiar fechas y categoría
+                        </Button>
+                    )}
                 </div>
 
                 <div className="overflow-hidden rounded-xl border">
@@ -124,7 +272,7 @@ export default function IncidenciasIndex({
                             </tr>
                         </thead>
                         <tbody>
-                            {incidents.length === 0 && (
+                            {incidents.data.length === 0 && (
                                 <tr>
                                     <td
                                         colSpan={7}
@@ -134,7 +282,7 @@ export default function IncidenciasIndex({
                                     </td>
                                 </tr>
                             )}
-                            {incidents.map((incident) => (
+                            {incidents.data.map((incident) => (
                                 <tr
                                     key={incident.id}
                                     className="border-t align-top"
@@ -200,6 +348,55 @@ export default function IncidenciasIndex({
                         </tbody>
                     </table>
                 </div>
+
+                {incidents.last_page > 1 && (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-sm text-muted-foreground">
+                            Mostrando {incidents.from ?? 0}–{incidents.to ?? 0}{' '}
+                            de {incidents.total}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                            {incidents.links.map((link, index) => {
+                                const label = link.label
+                                    .replace('&laquo;', '«')
+                                    .replace('&raquo;', '»');
+
+                                if (!link.url) {
+                                    return (
+                                        <Button
+                                            key={`${label}-${index}`}
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            disabled
+                                        >
+                                            {label}
+                                        </Button>
+                                    );
+                                }
+
+                                return (
+                                    <Button
+                                        key={`${label}-${index}`}
+                                        size="sm"
+                                        variant={
+                                            link.active ? 'default' : 'outline'
+                                        }
+                                        asChild
+                                    >
+                                        <Link
+                                            href={link.url}
+                                            preserveState
+                                            preserveScroll
+                                        >
+                                            {label}
+                                        </Link>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </>
     );
