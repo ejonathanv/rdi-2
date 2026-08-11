@@ -135,12 +135,12 @@ export default function Dashboard({
 }) {
     return (
         <>
-            <Head title="Panel" />
+            <Head title="Escritorio" />
 
             <div className="flex flex-col gap-6 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <Heading
-                        title="Panel"
+                        title="Escritorio"
                         description={
                             area
                                 ? `Indicadores de rondines e incidencias · ${area.name} (${area.code})`
@@ -477,7 +477,7 @@ export default function Dashboard({
 Dashboard.layout = {
     breadcrumbs: [
         {
-            title: 'Panel',
+            title: 'Escritorio',
             href: dashboard(),
         },
     ],

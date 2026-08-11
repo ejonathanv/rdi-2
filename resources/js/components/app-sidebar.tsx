@@ -1,9 +1,11 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     Building2,
+    ChartColumn,
     ClipboardList,
     LayoutGrid,
     Route,
+    Settings2,
     Tags,
     TriangleAlert,
     Users,
@@ -64,7 +66,7 @@ export function AppSidebar() {
     const mainNavItems = useMemo(() => {
         const items: NavItem[] = [
             {
-                title: 'Panel',
+                title: 'Escritorio',
                 href: panelHref,
                 icon: LayoutGrid,
             },
@@ -76,35 +78,13 @@ export function AppSidebar() {
         const canViewCurrentOperations =
             canManageCurrentArea || currentRole === 'contact';
 
-        if (canManageCurrentArea) {
-            if (auth.user?.is_super_admin) {
-                items.push({
-                    title: 'Áreas',
-                    href: areasIndex(),
-                    icon: Building2,
-                });
-            }
-
-            items.push({
-                title: 'Usuarios',
-                href: usersIndex(),
-                icon: Users,
-            });
-
-            items.push({
-                title: 'Recorridos',
-                href: roundsIndex(),
-                icon: Route,
-            });
-
-            items.push({
-                title: 'Categorías',
-                href: incidentCategoriesIndex(),
-                icon: Tags,
-            });
-        }
-
         if (canViewCurrentOperations) {
+            items.push({
+                title: 'Incidencias',
+                href: incidenciasIndex(),
+                icon: TriangleAlert,
+            });
+
             items.push({
                 title: 'Rondines',
                 href: rondinesIndex(),
@@ -112,9 +92,45 @@ export function AppSidebar() {
             });
 
             items.push({
-                title: 'Incidencias',
-                href: incidenciasIndex(),
-                icon: TriangleAlert,
+                title: 'Reportes',
+                icon: ChartColumn,
+                disabled: true,
+            });
+        }
+
+        if (canManageCurrentArea) {
+            const configItems: NavItem[] = [];
+
+            if (auth.user?.is_super_admin) {
+                configItems.push({
+                    title: 'Áreas',
+                    href: areasIndex(),
+                    icon: Building2,
+                });
+            }
+
+            configItems.push(
+                {
+                    title: 'Recorridos',
+                    href: roundsIndex(),
+                    icon: Route,
+                },
+                {
+                    title: 'Categorías',
+                    href: incidentCategoriesIndex(),
+                    icon: Tags,
+                },
+                {
+                    title: 'Usuarios',
+                    href: usersIndex(),
+                    icon: Users,
+                },
+            );
+
+            items.push({
+                title: 'Configuración',
+                icon: Settings2,
+                items: configItems,
             });
         }
 
