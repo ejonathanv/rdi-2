@@ -36,6 +36,11 @@ import { index as areasIndex } from '@/routes/areas';
 import { home as guardHome } from '@/routes/guard';
 import { index as incidenciasIndex } from '@/routes/incidencias';
 import { index as incidentCategoriesIndex } from '@/routes/incident-categories';
+import {
+    puntosCriticos as reportesPuntosCriticos,
+    tiempos as reportesTiempos,
+    volumen as reportesVolumen,
+} from '@/routes/reportes';
 import { index as rondinesIndex } from '@/routes/rondines';
 import { index as roundsIndex } from '@/routes/rounds';
 import { index as usersIndex } from '@/routes/users';
@@ -94,7 +99,20 @@ export function AppSidebar() {
             items.push({
                 title: 'Reportes',
                 icon: ChartColumn,
-                disabled: true,
+                items: [
+                    {
+                        title: 'Volumen de incidencias',
+                        href: reportesVolumen(),
+                    },
+                    {
+                        title: 'Tiempos de atención',
+                        href: reportesTiempos(),
+                    },
+                    {
+                        title: 'Puntos críticos',
+                        href: reportesPuntosCriticos(),
+                    },
+                ],
             });
         }
 

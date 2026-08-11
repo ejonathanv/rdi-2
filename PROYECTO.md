@@ -135,7 +135,7 @@ Ver checklist vivo en [`ROADMAP.md`](ROADMAP.md) (estados de incidencia, Twilio 
 Ítems históricos aún referenciados ahí:
 
 - Panel de contactos (dashboard de urgentes y recorridos asignados)
-- `round_assignments` / reportes agregados
+- `round_assignments` / cumplimiento de rondines (4.º reporte) / export PDF-Excel
 - Abandonar patrulla a mitad
 
 ---
@@ -187,3 +187,4 @@ Ver checklist vivo en [`ROADMAP.md`](ROADMAP.md) (estados de incidencia, Twilio 
 | 2026-08-02 | QR (`qrcode` npm) + scan autenticado por token | Guardia responde; base para reportes por usuario |
 | 2026-08-02 | Panel de acciones del guardia post-login | Separar UX operativa del dashboard de admin |
 | 2026-08-04 | Patrol runs + visitas + escáner QR | Tiempos de recorrido y prueba de presencia |
+| 2026-08-11 | Reportes: Volumen, Tiempos de atención, Puntos críticos | Detección/resolución de incidencias para gerencia |

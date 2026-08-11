@@ -91,11 +91,14 @@ Hoy se registra y se notifica; falta gestionar la respuesta.
 
 ### 5. Reportes agregados
 
-- [ ] Incidencias por categoría / semana / área (tabla + export)
-- [ ] Cumplimiento de rondines: % puntos visitados, duración, puntos omitidos
-- [ ] Puntos “calientes” (más urgentes / incidencias)
+Menú **Reportes** (submenu) — primer trio orientado a detección y resolución de incidencias:
+
+- [x] **Volumen de incidencias** — totales del periodo (abiertas / resueltas / descartadas / urgentes), desglose por categoría, serie temporal; filtros desde/hasta
+- [x] **Tiempos de atención** — promedio/mediana a toma (`acknowledged_at`) y a cierre (`resolved_at`); urgente vs no; por categoría
+- [x] **Puntos críticos** — ranking de checkpoints/recorridos por incidencias + visitas urgentes en el periodo
+- [ ] Cumplimiento de rondines (4.º reporte futuro): % puntos visitados, duración, puntos omitidos
 - [ ] Export PDF y/o Excel
-- [ ] Filtros por rango de fechas y área
+- [x] Filtros por rango de fechas y área (comunes a los reportes; área = activa)
 
 **Por qué:** es lo que suelen pedir en reuniones de planta y auditorías.
 
@@ -227,4 +230,6 @@ Hoy se registra y se notifica; falta gestionar la respuesta.
 
 | Fecha | Ítem | Notas |
 |-------|------|-------|
+| 2026-08-11 | §5 Reportes agregados | Trio implementado: Volumen, Tiempos de atención, Puntos críticos + menú submenu |
+| 2026-08-11 | §5 Reportes agregados (definición) | Trio de menú: Volumen de incidencias, Tiempos de atención, Puntos críticos; cumplimiento de rondines queda como 4.º |
 | 2026-08-07 | §1 Ciclo de vida de incidencias | Estados, toma/cierre admin, filtros, KPIs tiempos, notificación al cerrar |

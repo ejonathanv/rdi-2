@@ -18,6 +18,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PanicAlertController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -84,6 +85,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('incidencias/{incident}', [AdminIncidentController::class, 'show'])->name('incidencias.show');
         Route::patch('incidencias/{incident}/estado', [AdminIncidentController::class, 'updateStatus'])
             ->name('incidencias.status');
+
+        Route::get('reportes/volumen-de-incidencias', [ReportController::class, 'volumen'])
+            ->name('reportes.volumen');
+        Route::get('reportes/tiempos-de-atencion', [ReportController::class, 'tiempos'])
+            ->name('reportes.tiempos');
+        Route::get('reportes/puntos-criticos', [ReportController::class, 'puntosCriticos'])
+            ->name('reportes.puntos-criticos');
     });
 
     Route::middleware('manage.areas')->group(function () {
