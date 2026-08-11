@@ -56,6 +56,14 @@ class Area extends Model
     }
 
     /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function contacts(): BelongsToMany
+    {
+        return $this->users()->wherePivot('role', AreaRole::Contact->value);
+    }
+
+    /**
      * @return HasMany<Round, $this>
      */
     public function rounds(): HasMany

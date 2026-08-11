@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Services\PatrolReportBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -70,8 +72,36 @@ class AdminRondinController extends Controller
 
         return Inertia::render('rondines/patrol', [
             ...$report,
+            'can_resolve_urgent' => $request->user()->canViewAreaOperations($round->area),
             'pdf_url' => route('rondines.patrols.pdf', [$round, $patrol]),
         ]);
+    }
+
+    public function resolveUrgentVisit(
+        Request $request,
+        Round $round,
+        PatrolRun $patrol,
+        PatrolCheckpointVisit $visit,
+    ): RedirectResponse {
+        $this->authorizePatrol($round, $patrol);
+
+        abort_unless($visit->patrol_run_id === $patrol->id, 404);
+        abort_unless($request->user()->canViewAreaOperations($round->area), 403);
+        abort_unless($visit->is_urgent, 422);
+
+        if ($visit->urgent_resolved_at === null) {
+            $visit->forceFill([
+                'urgent_resolved_at' => now(),
+                'urgent_resolved_by_id' => $request->user()->id,
+            ])->save();
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => __('Urgente marcado como atendido.'),
+        ]);
+
+        return to_route('rondines.patrols.show', [$round, $patrol]);
     }
 
     public function downloadPdf(Request $request, Round $round, PatrolRun $patrol): SymfonyResponse
@@ -110,6 +140,7 @@ class AdminRondinController extends Controller
 
     private function authorizePatrol(Round $round, PatrolRun $patrol): void
     {
+        $round->loadMissing('area');
         $this->authorize('view', $round);
 
         abort_unless($patrol->round_id === $round->id, 404);

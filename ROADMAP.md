@@ -166,9 +166,15 @@ Menú **Reportes** (submenu) — primer trio orientado a detección y resolució
 
 ### 12. Resumen diario / semanal
 
-- [ ] Digest automático: urgentes, incidencias, pánicos del periodo
-- [ ] Canal: WhatsApp y/o email a admins del área
+- [x] Digest automático por email a **contactos** del área:
+  - Urgentes pendientes (diario 08:00 CDMX) — incidencias urgentes abiertas + visitas urgentes sin atender
+  - Resumen semanal de incidencias (viernes 13:00 CDMX)
+  - Recorridos del día (diario 20:00 CDMX)
+- [x] Visitas urgentes: acción “Marcar urgente como atendido” en detalle de patrulla
+- [ ] Canal WhatsApp (además de email)
 - [ ] Preferir agregación sin IA; OpenAI solo si aporta redacción
+
+**Comandos:** `reports:send-open-urgents-digest`, `reports:send-weekly-incidents-digest`, `reports:send-daily-patrols-digest`
 
 ### 13. Detección de patrones
 
@@ -230,6 +236,7 @@ Menú **Reportes** (submenu) — primer trio orientado a detección y resolució
 
 | Fecha | Ítem | Notas |
 |-------|------|-------|
+| 2026-08-11 | §12 Digests email a contactos | Urgentes pendientes, semanal incidencias, recorridos del día + cierre de visita urgente |
 | 2026-08-11 | §5 Reportes agregados | Trio implementado: Volumen, Tiempos de atención, Puntos críticos + menú submenu |
 | 2026-08-11 | §5 Reportes agregados (definición) | Trio de menú: Volumen de incidencias, Tiempos de atención, Puntos críticos; cumplimiento de rondines queda como 4.º |
 | 2026-08-07 | §1 Ciclo de vida de incidencias | Estados, toma/cierre admin, filtros, KPIs tiempos, notificación al cerrar |

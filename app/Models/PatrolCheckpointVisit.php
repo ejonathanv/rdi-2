@@ -19,6 +19,8 @@ use Illuminate\Support\Carbon;
  * @property PatrolVisitOutcome $outcome
  * @property bool $is_urgent
  * @property string|null $urgent_notes
+ * @property Carbon|null $urgent_resolved_at
+ * @property int|null $urgent_resolved_by_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -29,6 +31,8 @@ use Illuminate\Support\Carbon;
     'outcome',
     'is_urgent',
     'urgent_notes',
+    'urgent_resolved_at',
+    'urgent_resolved_by_id',
     'checkpoint_submission_id',
 ])]
 class PatrolCheckpointVisit extends Model
@@ -45,7 +49,13 @@ class PatrolCheckpointVisit extends Model
             'reviewed_at' => 'datetime',
             'outcome' => PatrolVisitOutcome::class,
             'is_urgent' => 'boolean',
+            'urgent_resolved_at' => 'datetime',
         ];
+    }
+
+    public function isUrgentOpen(): bool
+    {
+        return $this->is_urgent && $this->urgent_resolved_at === null;
     }
 
     /**
@@ -70,6 +80,14 @@ class PatrolCheckpointVisit extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(CheckpointSubmission::class, 'checkpoint_submission_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function urgentResolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'urgent_resolved_by_id');
     }
 
     /**

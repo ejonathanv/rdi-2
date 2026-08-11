@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { pdf as patrolPdf } from '@/routes/rondines/patrols';
 import { index as rondinesIndex } from '@/routes/rondines';
 import { show as showRound } from '@/routes/rondines/rounds';
+import { resolveUrgent } from '@/routes/rondines/visits';
 
 type AreaSummary = {
     id: number;
@@ -27,6 +28,7 @@ type PhotoRow = {
 
 type CheckpointRow = {
     id: number;
+    visit_id: number | null;
     name: string;
     position: number;
     visited: boolean;
@@ -35,6 +37,7 @@ type CheckpointRow = {
     outcome_label: string | null;
     is_urgent: boolean;
     urgent_notes: string | null;
+    urgent_resolved_at: string | null;
     answers: AnswerRow[];
     photos: PhotoRow[];
 };
@@ -66,13 +69,27 @@ export default function RondinesPatrol({
     round,
     patrol,
     checkpoints,
+    can_resolve_urgent,
 }: {
     area: AreaSummary;
     round: { id: number; title: string };
     patrol: PatrolDetail;
     checkpoints: CheckpointRow[];
+    can_resolve_urgent: boolean;
     pdf_url: string;
 }) {
+    const resolveUrgentVisit = (visitId: number) => {
+        router.patch(
+            resolveUrgent.url({
+                round: round.id,
+                patrol: patrol.id,
+                visit: visitId,
+            }),
+            {},
+            { preserveScroll: true },
+        );
+    };
+
     return (
         <>
             <Head title={`Rondín · ${patrol.guard.name}`} />
@@ -156,11 +173,18 @@ export default function RondinesPatrol({
                                 ) : (
                                     <Badge variant="secondary">Pendiente</Badge>
                                 )}
-                                {checkpoint.is_urgent && (
-                                    <Badge variant="destructive">
-                                        Urgente
-                                    </Badge>
-                                )}
+                                {checkpoint.is_urgent &&
+                                    !checkpoint.urgent_resolved_at && (
+                                        <Badge variant="destructive">
+                                            Urgente
+                                        </Badge>
+                                    )}
+                                {checkpoint.is_urgent &&
+                                    checkpoint.urgent_resolved_at && (
+                                        <Badge variant="outline">
+                                            Urgente atendido
+                                        </Badge>
+                                    )}
                             </div>
 
                             {checkpoint.visited && (
@@ -178,6 +202,34 @@ export default function RondinesPatrol({
                                                 </span>
                                                 {checkpoint.urgent_notes}
                                             </p>
+                                        )}
+
+                                    {checkpoint.is_urgent &&
+                                        checkpoint.urgent_resolved_at && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Atendido:{' '}
+                                                {formatDateTime(
+                                                    checkpoint.urgent_resolved_at,
+                                                )}
+                                            </p>
+                                        )}
+
+                                    {can_resolve_urgent &&
+                                        checkpoint.is_urgent &&
+                                        checkpoint.visit_id &&
+                                        !checkpoint.urgent_resolved_at && (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    resolveUrgentVisit(
+                                                        checkpoint.visit_id!,
+                                                    )
+                                                }
+                                            >
+                                                Marcar urgente como atendido
+                                            </Button>
                                         )}
 
                                     {checkpoint.answers.length > 0 && (

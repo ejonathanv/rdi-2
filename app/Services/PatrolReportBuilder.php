@@ -72,6 +72,7 @@ class PatrolReportBuilder
 
             return [
                 'id' => $checkpoint->id,
+                'visit_id' => $visit?->id,
                 'name' => $checkpoint->name,
                 'position' => $checkpoint->position,
                 'visited' => $visit !== null,
@@ -80,6 +81,7 @@ class PatrolReportBuilder
                 'outcome_label' => $visit?->outcome?->label(),
                 'is_urgent' => (bool) ($visit?->is_urgent ?? false),
                 'urgent_notes' => $visit?->urgent_notes,
+                'urgent_resolved_at' => $visit?->urgent_resolved_at?->toIso8601String(),
                 'answers' => $answers,
                 'photos' => $photos,
             ];
