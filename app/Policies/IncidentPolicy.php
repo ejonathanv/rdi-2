@@ -9,16 +9,16 @@ class IncidentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->canManageAnyArea();
+        return $user->canViewAnyAreaOperations();
     }
 
     public function view(User $user, Incident $incident): bool
     {
-        return $user->canManageArea($incident->area);
+        return $user->canViewAreaOperations($incident->area);
     }
 
     public function update(User $user, Incident $incident): bool
     {
-        return $user->canManageArea($incident->area);
+        return $user->canViewAreaOperations($incident->area);
     }
 }

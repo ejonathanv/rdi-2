@@ -9,12 +9,12 @@ class RoundPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->canManageAnyArea();
+        return $user->canViewAnyAreaOperations();
     }
 
     public function view(User $user, Round $round): bool
     {
-        return $user->canManageArea($round->area);
+        return $user->canViewAreaOperations($round->area);
     }
 
     public function create(User $user): bool

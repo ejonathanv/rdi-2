@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureCanManageAreas;
+use App\Http\Middleware\EnsureCanViewAreaOperations;
 use App\Http\Middleware\EnsureCurrentArea;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'manage.areas' => EnsureCanManageAreas::class,
+            'view.operations' => EnsureCanViewAreaOperations::class,
         ]);
 
         $middleware->trustProxies(at: '*');

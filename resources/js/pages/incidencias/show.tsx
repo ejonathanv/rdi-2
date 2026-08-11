@@ -72,24 +72,26 @@ function formatDateTime(value: string | null): string {
 export default function IncidenciasShow({
     area,
     incident,
+    can_update_status = false,
 }: {
     area: AreaSummary;
     incident: IncidentDetail;
+    can_update_status?: boolean;
 }) {
     const [closeStatus, setCloseStatus] = useState<string | null>(null);
     const [notes, setNotes] = useState('');
     const [notesError, setNotesError] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
 
-    const canTake = incident.allowed_transitions.some(
-        (item) => item.value === 'en_atencion',
-    );
-    const canResolve = incident.allowed_transitions.some(
-        (item) => item.value === 'resuelta',
-    );
-    const canDiscard = incident.allowed_transitions.some(
-        (item) => item.value === 'descartada',
-    );
+    const canTake =
+        can_update_status &&
+        incident.allowed_transitions.some((item) => item.value === 'en_atencion');
+    const canResolve =
+        can_update_status &&
+        incident.allowed_transitions.some((item) => item.value === 'resuelta');
+    const canDiscard =
+        can_update_status &&
+        incident.allowed_transitions.some((item) => item.value === 'descartada');
 
     const submitStatus = (status: string, resolutionNotes?: string) => {
         setProcessing(true);

@@ -72,13 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('scan/{token}/completo', [CheckpointScanController::class, 'complete'])
         ->name('checkpoints.scan.complete');
 
-    Route::middleware('manage.areas')->group(function () {
-        Route::resource('areas', AreaController::class)->except(['show']);
-        Route::resource('users', UserController::class)->except(['show']);
-        Route::resource('rounds', RoundController::class)->except(['show']);
-        Route::resource('incident-categories', IncidentCategoryController::class)
-            ->except(['show']);
-
+    Route::middleware('view.operations')->group(function () {
         Route::get('rondines', [AdminRondinController::class, 'index'])->name('rondines.index');
         Route::get('rondines/{round}', [AdminRondinController::class, 'showRound'])->name('rondines.rounds.show');
         Route::get('rondines/{round}/patrullas/{patrol}', [AdminRondinController::class, 'showPatrol'])
@@ -90,6 +84,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('incidencias/{incident}', [AdminIncidentController::class, 'show'])->name('incidencias.show');
         Route::patch('incidencias/{incident}/estado', [AdminIncidentController::class, 'updateStatus'])
             ->name('incidencias.status');
+    });
+
+    Route::middleware('manage.areas')->group(function () {
+        Route::resource('areas', AreaController::class)->except(['show']);
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('rounds', RoundController::class)->except(['show']);
+        Route::resource('incident-categories', IncidentCategoryController::class)
+            ->except(['show']);
 
         Route::post('rounds/{round}/checkpoints', [CheckpointController::class, 'store'])
             ->name('rounds.checkpoints.store');

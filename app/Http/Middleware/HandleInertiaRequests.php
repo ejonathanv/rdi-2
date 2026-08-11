@@ -89,6 +89,7 @@ class HandleInertiaRequests extends Middleware
                     'home_path' => $user->homePath(),
                     'can_manage_areas' => $user->canManageAnyArea(),
                     'can_manage_users' => $user->canManageAnyArea(),
+                    'can_view_operations' => $user->canViewAnyAreaOperations(),
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                 ] : null,

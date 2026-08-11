@@ -8,6 +8,7 @@ export type User = {
     is_super_admin?: boolean;
     can_manage_areas?: boolean;
     can_manage_users?: boolean;
+    can_view_operations?: boolean;
     created_at: string;
     updated_at: string;
     [key: string]: unknown;

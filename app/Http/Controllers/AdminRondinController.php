@@ -24,7 +24,7 @@ class AdminRondinController extends Controller
         $user = $request->user();
         $currentArea = $this->resolveCurrentArea($request);
 
-        abort_unless($currentArea && $user->canManageArea($currentArea), 403);
+        abort_unless($currentArea && $user->canViewAreaOperations($currentArea), 403);
 
         $rounds = Round::query()
             ->where('area_id', $currentArea->id)

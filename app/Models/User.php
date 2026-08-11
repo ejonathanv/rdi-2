@@ -111,6 +111,28 @@ class User extends Authenticatable implements PasskeyUser
             ->exists();
     }
 
+    public function canViewAreaOperations(Area $area): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        $role = $this->roleIn($area);
+
+        return $role === AreaRole::Admin || $role === AreaRole::Contact;
+    }
+
+    public function canViewAnyAreaOperations(): bool
+    {
+        if ($this->isSuperAdmin() || $this->canManageAnyArea()) {
+            return true;
+        }
+
+        return $this->areas()
+            ->wherePivot('role', AreaRole::Contact->value)
+            ->exists();
+    }
+
     public function canAccessArea(Area $area): bool
     {
         if ($this->isSuperAdmin()) {

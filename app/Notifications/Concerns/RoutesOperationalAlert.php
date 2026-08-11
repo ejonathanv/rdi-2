@@ -41,7 +41,7 @@ trait RoutesOperationalAlert
 
     protected function resolveUrl(object $notifiable, string $managerUrl): string
     {
-        if ($notifiable instanceof User && ! $notifiable->canManageAnyArea()) {
+        if ($notifiable instanceof User && ! $notifiable->canViewAnyAreaOperations()) {
             return $notifiable->homePath();
         }
 

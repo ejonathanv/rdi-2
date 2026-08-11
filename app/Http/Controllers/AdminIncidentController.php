@@ -27,7 +27,7 @@ class AdminIncidentController extends Controller
         $user = $request->user();
         $currentArea = $this->resolveCurrentArea($request);
 
-        abort_unless($currentArea && $user->canManageArea($currentArea), 403);
+        abort_unless($currentArea && $user->canViewAreaOperations($currentArea), 403);
 
         $statusFilter = $request->string('status')->toString();
         $status = IncidentStatus::tryFrom($statusFilter);
@@ -81,8 +81,11 @@ class AdminIncidentController extends Controller
         $responseSeconds = $incident->responseSeconds();
         $resolutionSeconds = $incident->resolutionSeconds();
 
+        $canUpdateStatus = $request->user()->can('update', $incident);
+
         return Inertia::render('incidencias/show', [
             'area' => $incident->area->only(['id', 'name', 'code']),
+            'can_update_status' => $canUpdateStatus,
             'incident' => [
                 'id' => $incident->id,
                 'message_raw' => $incident->message_raw,
@@ -90,13 +93,15 @@ class AdminIncidentController extends Controller
                 'is_urgent' => $incident->is_urgent,
                 'status' => $incident->status->value,
                 'status_label' => $incident->status->label(),
-                'allowed_transitions' => collect($incident->status->allowedTransitions())
-                    ->map(fn (IncidentStatus $status) => [
-                        'value' => $status->value,
-                        'label' => $status->label(),
-                    ])
-                    ->values()
-                    ->all(),
+                'allowed_transitions' => $canUpdateStatus
+                    ? collect($incident->status->allowedTransitions())
+                        ->map(fn (IncidentStatus $status) => [
+                            'value' => $status->value,
+                            'label' => $status->label(),
+                        ])
+                        ->values()
+                        ->all()
+                    : [],
                 'assigned_to' => $incident->assignedTo
                     ? [
                         'id' => $incident->assignedTo->id,

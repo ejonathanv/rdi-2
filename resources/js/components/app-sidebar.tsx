@@ -47,6 +47,7 @@ type PageProps = {
             home_path?: string;
             can_manage_areas?: boolean;
             can_manage_users?: boolean;
+            can_view_operations?: boolean;
         } | null;
     };
     currentArea: AreaSummary | null;
@@ -69,7 +70,13 @@ export function AppSidebar() {
             },
         ];
 
-        if (auth.user?.is_super_admin || auth.user?.can_manage_areas) {
+        const currentRole = currentArea?.role;
+        const canManageCurrentArea =
+            Boolean(auth.user?.is_super_admin) || currentRole === 'admin';
+        const canViewCurrentOperations =
+            canManageCurrentArea || currentRole === 'contact';
+
+        if (canManageCurrentArea) {
             if (auth.user?.is_super_admin) {
                 items.push({
                     title: 'Áreas',
@@ -78,13 +85,11 @@ export function AppSidebar() {
                 });
             }
 
-            if (auth.user?.can_manage_users) {
-                items.push({
-                    title: 'Usuarios',
-                    href: usersIndex(),
-                    icon: Users,
-                });
-            }
+            items.push({
+                title: 'Usuarios',
+                href: usersIndex(),
+                icon: Users,
+            });
 
             items.push({
                 title: 'Recorridos',
@@ -97,7 +102,9 @@ export function AppSidebar() {
                 href: incidentCategoriesIndex(),
                 icon: Tags,
             });
+        }
 
+        if (canViewCurrentOperations) {
             items.push({
                 title: 'Rondines',
                 href: rondinesIndex(),
@@ -112,7 +119,7 @@ export function AppSidebar() {
         }
 
         return items;
-    }, [auth.user, panelHref]);
+    }, [auth.user, currentArea?.role, panelHref]);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
