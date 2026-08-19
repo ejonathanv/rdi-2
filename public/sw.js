@@ -18,8 +18,8 @@ self.addEventListener('push', (event) => {
     const title = payload.title || 'RDI';
     const options = {
         body: payload.body || '',
-        icon: payload.icon || '/favicon.ico',
-        badge: payload.badge || '/favicon.ico',
+        icon: payload.icon || '/img/favicon.png',
+        badge: payload.badge || '/img/favicon.png',
         data: payload.data || { url: '/' },
     };
 

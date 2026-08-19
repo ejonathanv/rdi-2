@@ -31,7 +31,7 @@ trait RoutesOperationalAlert
         return (new WebPushMessage)
             ->title($data['title'])
             ->body($data['body'])
-            ->icon('/favicon.ico')
+            ->icon('/img/favicon.png')
             ->data([
                 'url' => $data['url'],
                 'type' => $data['type'],
