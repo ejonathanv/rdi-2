@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('checkpoint_submission_answers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('checkpoint_submission_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('checkpoint_question_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('checkpoint_question_option_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('checkpoint_submission_id')->constrained(indexName: 'csa_submission_id_fk')->cascadeOnDelete();
+            $table->foreignId('checkpoint_question_id')->constrained(indexName: 'csa_question_id_fk')->cascadeOnDelete();
+            $table->foreignId('checkpoint_question_option_id')->constrained(indexName: 'csa_question_option_id_fk')->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(
