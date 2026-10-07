@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Concerns;
 
+use App\Models\BrandingSetting;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushChannel;
@@ -31,7 +32,7 @@ trait RoutesOperationalAlert
         return (new WebPushMessage)
             ->title($data['title'])
             ->body($data['body'])
-            ->icon('/img/favicon.png')
+            ->icon(BrandingSetting::current()->faviconUrl())
             ->data([
                 'url' => $data['url'],
                 'type' => $data['type'],

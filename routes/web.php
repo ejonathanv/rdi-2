@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminIncidentController;
 use App\Http\Controllers\AdminRondinController;
 use App\Http\Controllers\AreaController;
+use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CheckpointQuestionController;
 use App\Http\Controllers\CheckpointQuestionnaireController;
@@ -123,6 +124,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('questions/{question}', [CheckpointQuestionController::class, 'destroy'])
             ->name('questions.destroy');
     });
+
+    Route::get('configuracion/imagen-corporativa', [BrandingController::class, 'edit'])
+        ->name('branding.edit');
+    Route::post('configuracion/imagen-corporativa', [BrandingController::class, 'update'])
+        ->name('branding.update');
+    Route::delete('configuracion/imagen-corporativa/logo', [BrandingController::class, 'destroyLogo'])
+        ->name('branding.logo.destroy');
+    Route::delete('configuracion/imagen-corporativa/favicon', [BrandingController::class, 'destroyFavicon'])
+        ->name('branding.favicon.destroy');
 });
 
 require __DIR__.'/settings.php';

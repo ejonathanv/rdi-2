@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Area;
+use App\Models\BrandingSetting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -100,6 +101,7 @@ class HandleInertiaRequests extends Middleware
             'hasPushSubscription' => $user ? $user->pushSubscriptions()->exists() : false,
             'vapidPublicKey' => config('webpush.vapid.public_key'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'branding' => BrandingSetting::current()->toSharedArray(),
         ];
     }
 }

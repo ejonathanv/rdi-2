@@ -4,6 +4,7 @@ import {
     ChartColumn,
     ClipboardList,
     LayoutGrid,
+    Palette,
     Route,
     Settings2,
     Tags,
@@ -30,9 +31,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { update as updateCurrentArea } from '@/routes/current-area';
 import { dashboard } from '@/routes';
 import { index as areasIndex } from '@/routes/areas';
+import { edit as brandingEdit } from '@/routes/branding';
+import { update as updateCurrentArea } from '@/routes/current-area';
 import { home as guardHome } from '@/routes/guard';
 import { index as incidenciasIndex } from '@/routes/incidencias';
 import { index as incidentCategoriesIndex } from '@/routes/incident-categories';
@@ -144,6 +146,14 @@ export function AppSidebar() {
                     icon: Users,
                 },
             );
+
+            if (auth.user?.is_super_admin) {
+                configItems.push({
+                    title: 'Imagen corporativa',
+                    href: brandingEdit(),
+                    icon: Palette,
+                });
+            }
 
             items.push({
                 title: 'Configuración',

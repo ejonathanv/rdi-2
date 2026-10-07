@@ -14,10 +14,21 @@
         ul { margin: 6px 0; padding-left: 18px; }
         .photos { margin-top: 8px; }
         .photos img { width: 160px; height: 120px; object-fit: cover; margin-right: 8px; margin-bottom: 8px; border: 1px solid #ddd; }
+        .header { width: 100%; border-bottom: 3px solid {{ $branding->primary_color }}; margin-bottom: 12px; padding-bottom: 8px; }
+        .header td { vertical-align: middle; }
+        .header .logo { max-height: 48px; max-width: 180px; }
+        h1, h2 { color: {{ $branding->primary_color }}; }
     </style>
 </head>
 <body>
-    <h1>Reporte de rondín</h1>
+    <table class="header">
+        <tr>
+            <td><h1>Reporte de rondín</h1></td>
+            <td style="text-align: right;">
+                <img class="logo" src="{{ $branding->logoAbsolutePath() }}" alt="Logo">
+            </td>
+        </tr>
+    </table>
     <p class="muted">{{ $area['name'] }} ({{ $area['code'] }}) · {{ $round['title'] }}</p>
 
     <div class="meta">

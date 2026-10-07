@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\BrandingSetting;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
@@ -127,6 +128,7 @@ class AdminRondinController extends Controller
             'round' => $report['round'],
             'patrol' => $report['patrol'],
             'checkpoints' => $checkpoints,
+            'branding' => BrandingSetting::current(),
         ])->setPaper('a4');
 
         $filename = sprintf(

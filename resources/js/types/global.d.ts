@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { Branding } from '@/types/branding';
 
 declare module 'react' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -16,6 +17,7 @@ declare module '@inertiajs/core' {
             unreadNotificationsCount: number;
             hasPushSubscription: boolean;
             vapidPublicKey: string | null;
+            branding: Branding;
             [key: string]: unknown;
         };
     }

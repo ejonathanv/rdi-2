@@ -3,6 +3,7 @@
     'color' => 'primary',
     'align' => 'center',
 ])
+@php($brandColor = \App\Models\BrandingSetting::current()->primary_color)
 <table class="action" align="{{ $align }}" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 <tr>
 <td align="{{ $align }}">
@@ -12,7 +13,7 @@
 <table border="0" cellpadding="0" cellspacing="0" role="presentation">
 <tr>
 <td>
-<a href="{{ $url }}" class="button button-{{ $color }}" target="_blank" rel="noopener">{!! $slot !!}</a>
+<a href="{{ $url }}" class="button button-{{ $color }}" target="_blank" rel="noopener" @if ($color === 'primary') style="background-color: {{ $brandColor }}; border-bottom: 8px solid {{ $brandColor }}; border-left: 18px solid {{ $brandColor }}; border-right: 18px solid {{ $brandColor }}; border-top: 8px solid {{ $brandColor }};" @endif>{!! $slot !!}</a>
 </td>
 </tr>
 </table>

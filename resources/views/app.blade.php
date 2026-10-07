@@ -1,5 +1,6 @@
+@php($branding = \App\Models\BrandingSetting::current())
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark']) style="--brand-primary: {{ $branding->primary_color }}; --brand-light: {{ $branding->light_color }}; --brand-dark: {{ $branding->dark_color }};">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,8 +31,8 @@
             }
         </style>
 
-        <link rel="icon" href="/img/favicon.png" type="image/png" sizes="250x250">
-        <link rel="apple-touch-icon" href="/img/favicon.png">
+        <link rel="icon" href="{{ $branding->faviconUrl() }}">
+        <link rel="apple-touch-icon" href="{{ $branding->faviconUrl() }}">
 
         @fonts
 

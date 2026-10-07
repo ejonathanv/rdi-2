@@ -1,5 +1,4 @@
-import { Link } from '@inertiajs/react';
-import rdiLogo from '../../../img/rdi-logo.svg';
+import { Link, usePage } from '@inertiajs/react';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
@@ -8,8 +7,10 @@ export default function AuthSimpleLayout({
     title,
     description,
 }: AuthLayoutProps) {
+    const { branding } = usePage().props;
+
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-primary p-6 text-primary-foreground md:p-10">
+        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-(--brand-dark) p-6 text-primary-foreground md:p-10">
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center gap-4">
@@ -18,9 +19,9 @@ export default function AuthSimpleLayout({
                             className="flex flex-col items-center gap-2 font-medium"
                         >
                             <img
-                                src={rdiLogo}
-                                alt="RDI"
-                                className="h-12 w-auto"
+                                src={branding.logo_url}
+                                alt="Logo"
+                                className="h-12 w-auto max-w-full object-contain"
                             />
                             <span className="sr-only">{title}</span>
                         </Link>
