@@ -28,6 +28,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $resolved_at
  * @property string|null $resolution_notes
  * @property Carbon|null $categorized_at
+ * @property string|null $client_uuid
+ * @property Carbon|null $occurred_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -47,6 +49,8 @@ use Illuminate\Support\Carbon;
     'resolved_at',
     'resolution_notes',
     'categorized_at',
+    'client_uuid',
+    'occurred_at',
 ])]
 class Incident extends Model
 {
@@ -64,6 +68,7 @@ class Incident extends Model
             'acknowledged_at' => 'datetime',
             'resolved_at' => 'datetime',
             'categorized_at' => 'datetime',
+            'occurred_at' => 'datetime',
         ];
     }
 

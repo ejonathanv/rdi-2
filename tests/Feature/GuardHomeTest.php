@@ -15,7 +15,7 @@ class GuardHomeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guard_is_redirected_to_guard_home_after_login(): void
+    public function test_guard_is_redirected_to_offline_guard_app_after_login(): void
     {
         $area = Area::factory()->create();
         $guard = User::factory()->create();
@@ -24,7 +24,7 @@ class GuardHomeTest extends TestCase
         $this->post(route('login.store'), [
             'email' => $guard->email,
             'password' => 'password',
-        ])->assertRedirect(route('guard.home', absolute: false));
+        ])->assertRedirect(route('guard.app', absolute: false));
     }
 
     public function test_admin_is_redirected_to_dashboard_after_login(): void
@@ -39,7 +39,7 @@ class GuardHomeTest extends TestCase
         ])->assertRedirect(route('dashboard', absolute: false));
     }
 
-    public function test_guard_visiting_dashboard_is_redirected_to_guard_home(): void
+    public function test_guard_visiting_dashboard_is_redirected_to_guard_app(): void
     {
         $area = Area::factory()->create();
         $guard = User::factory()->create();
@@ -47,7 +47,7 @@ class GuardHomeTest extends TestCase
 
         $this->actingAs($guard)
             ->get(route('dashboard'))
-            ->assertRedirect(route('guard.home'));
+            ->assertRedirect(route('guard.app'));
     }
 
     public function test_guard_can_view_home_and_available_rounds(): void

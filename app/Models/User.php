@@ -191,7 +191,7 @@ class User extends Authenticatable implements PasskeyUser
         }
 
         if ($this->hasGuardRole()) {
-            return route('guard.home', absolute: false);
+            return route('guard.app', absolute: false);
         }
 
         return route('dashboard', absolute: false);

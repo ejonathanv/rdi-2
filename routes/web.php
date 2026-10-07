@@ -10,9 +10,12 @@ use App\Http\Controllers\CheckpointQuestionnaireController;
 use App\Http\Controllers\CheckpointScanController;
 use App\Http\Controllers\CurrentAreaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GuardAppController;
 use App\Http\Controllers\GuardHomeController;
+use App\Http\Controllers\GuardOfflinePackageController;
 use App\Http\Controllers\GuardPatrolController;
 use App\Http\Controllers\GuardRoundController;
+use App\Http\Controllers\GuardSyncController;
 use App\Http\Controllers\IncidentCategoryController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\LandingPageController;
@@ -22,9 +25,11 @@ use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoundController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WebManifestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('landingpage', LandingPageController::class)->name('landingpage');
+Route::get('manifest.webmanifest', WebManifestController::class)->name('pwa.manifest');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('/', '/dashboard')->name('home');
@@ -123,6 +128,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('questions.update');
         Route::delete('questions/{question}', [CheckpointQuestionController::class, 'destroy'])
             ->name('questions.destroy');
+    });
+
+    Route::get('guardia/app', GuardAppController::class)->name('guard.app');
+    Route::get('guardia/offline/paquete', GuardOfflinePackageController::class)
+        ->name('guard.offline.package');
+    Route::prefix('guardia/sync')->name('guard.sync.')->group(function () {
+        Route::post('recorridos', [GuardSyncController::class, 'patrol'])->name('patrols');
+        Route::post('visitas', [GuardSyncController::class, 'visit'])->name('visits');
+        Route::post('incidencias', [GuardSyncController::class, 'incident'])->name('incidents');
+        Route::post('panico', [GuardSyncController::class, 'panic'])->name('panic');
     });
 
     Route::get('configuracion/imagen-corporativa', [BrandingController::class, 'edit'])

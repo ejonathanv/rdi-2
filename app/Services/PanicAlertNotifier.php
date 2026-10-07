@@ -66,8 +66,12 @@ class PanicAlertNotifier
             'RDI — BOTÓN DE PÁNICO',
             "Área: {$alert->area->name}",
             "Guardia: {$alert->user->name}",
-            'Hora: '.$alert->created_at->timezone(config('app.timezone'))->format('d/m/Y H:i'),
+            'Hora: '.$alert->triggeredAt()->timezone(config('app.timezone'))->format('d/m/Y H:i'),
         ];
+
+        if ($alert->wasRecordedOffline()) {
+            $lines[] = 'Registrada sin conexión a las '.$alert->triggeredAt()->timezone(config('app.timezone'))->format('H:i').'; enviada al recuperar la red.';
+        }
 
         if ($alert->patrolRun?->round) {
             $lines[] = "Recorrido: {$alert->patrolRun->round->title}";

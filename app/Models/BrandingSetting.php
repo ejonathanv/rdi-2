@@ -27,6 +27,10 @@ class BrandingSetting extends Model
 
     public const string DefaultDarkColor = '#13395f';
 
+    public const array PwaIconSizes = [192, 512];
+
+    public const string PwaAppName = 'RDI';
+
     private const string CacheKey = 'branding_settings';
 
     protected static function booted(): void
@@ -91,6 +95,27 @@ class BrandingSetting extends Model
         return $this->hasCustomFavicon()
             ? asset('storage/'.$this->favicon_path)
             : asset('img/favicon.png');
+    }
+
+    /**
+     * Square PNG icon derived from the favicon for the PWA manifest.
+     */
+    public function pwaIconUrl(int $size): string
+    {
+        $path = $this->pwaIconPath($size);
+
+        return $path !== null && Storage::disk('public')->exists($path)
+            ? asset('storage/'.$path)
+            : asset("img/icon-{$size}.png");
+    }
+
+    public function pwaIconPath(int $size): ?string
+    {
+        if ($this->favicon_path === null) {
+            return null;
+        }
+
+        return preg_replace('/\.[^.]+$/', "-{$size}.png", $this->favicon_path);
     }
 
     /**

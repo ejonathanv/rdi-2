@@ -16,7 +16,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response|RedirectResponse
     {
         if ($request->user()?->isGuardOnly()) {
-            return redirect()->route('guard.home');
+            return redirect()->route('guard.app');
         }
 
         $area = $this->resolveCurrentArea($request);

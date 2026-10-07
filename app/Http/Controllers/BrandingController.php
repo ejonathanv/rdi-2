@@ -7,9 +7,14 @@ use App\Models\BrandingSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\ImageManager;
+use Throwable;
 
 class BrandingController extends Controller
 {
@@ -41,7 +46,9 @@ class BrandingController extends Controller
         }
 
         if ($request->hasFile('favicon')) {
+            $this->deletePwaIcons($branding);
             $attributes['favicon_path'] = $this->storeAsset($request->file('favicon'), 'favicon', $branding->favicon_path);
+            $this->generatePwaIcons($attributes['favicon_path']);
         }
 
         $branding->update($attributes);
@@ -69,6 +76,7 @@ class BrandingController extends Controller
         abort_unless($request->user()->isSuperAdmin(), 403);
 
         $branding = BrandingSetting::current();
+        $this->deletePwaIcons($branding);
         $this->deleteAsset($branding->favicon_path);
         $branding->update(['favicon_path' => null]);
 
@@ -88,6 +96,37 @@ class BrandingController extends Controller
         $this->deleteAsset($previousPath);
 
         return $path;
+    }
+
+    /**
+     * ICO files cannot be decoded by GD; those keep the default RDI icons.
+     */
+    private function generatePwaIcons(string $faviconPath): void
+    {
+        $branding = new BrandingSetting(['favicon_path' => $faviconPath]);
+        $manager = new ImageManager(new Driver);
+
+        try {
+            foreach (BrandingSetting::PwaIconSizes as $size) {
+                $encoded = $manager
+                    ->decode(Storage::disk('public')->path($faviconPath))
+                    ->contain($size, $size)
+                    ->encode(new PngEncoder);
+
+                Storage::disk('public')->put((string) $branding->pwaIconPath($size), (string) $encoded);
+            }
+        } catch (Throwable $exception) {
+            Log::warning('No se pudieron generar los íconos PWA desde el favicon.', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function deletePwaIcons(BrandingSetting $branding): void
+    {
+        foreach (BrandingSetting::PwaIconSizes as $size) {
+            $this->deleteAsset($branding->pwaIconPath($size));
+        }
     }
 
     private function deleteAsset(?string $path): void

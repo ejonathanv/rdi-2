@@ -32,7 +32,14 @@
         </style>
 
         <link rel="icon" href="{{ $branding->faviconUrl() }}">
-        <link rel="apple-touch-icon" href="{{ $branding->faviconUrl() }}">
+        <link rel="apple-touch-icon" href="{{ $branding->pwaIconUrl(192) }}">
+        <link rel="manifest" href="{{ route('pwa.manifest', absolute: false) }}">
+        <meta name="theme-color" content="{{ $branding->dark_color }}">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ \App\Models\BrandingSetting::PwaAppName }}">
+        <meta name="application-name" content="{{ \App\Models\BrandingSetting::PwaAppName }}">
 
         @fonts
 

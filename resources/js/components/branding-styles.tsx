@@ -14,9 +14,7 @@ export default function BrandingStyles() {
 
     useEffect(() => {
         document
-            .querySelectorAll<HTMLLinkElement>(
-                'link[rel="icon"], link[rel="apple-touch-icon"]',
-            )
+            .querySelectorAll<HTMLLinkElement>('link[rel="icon"]')
             .forEach((link) => {
                 link.href = branding.favicon_url;
             });

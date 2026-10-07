@@ -8,6 +8,7 @@ use App\Models\Checkpoint;
 use App\Models\CheckpointSubmission;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -20,6 +21,8 @@ class PatrolVisitRecorder
         ?CheckpointSubmission $submission = null,
         bool $isUrgent = false,
         ?string $urgentNotes = null,
+        ?CarbonInterface $reviewedAt = null,
+        ?string $clientUuid = null,
     ): PatrolCheckpointVisit {
         abort_unless($patrol->isInProgress(), 422);
         abort_unless($checkpoint->round_id === $patrol->round_id, 403);
@@ -30,11 +33,12 @@ class PatrolVisitRecorder
             ]);
         }
 
-        return DB::transaction(function () use ($patrol, $checkpoint, $outcome, $submission, $isUrgent, $urgentNotes) {
+        return DB::transaction(function () use ($patrol, $checkpoint, $outcome, $submission, $isUrgent, $urgentNotes, $reviewedAt, $clientUuid) {
             $visit = PatrolCheckpointVisit::query()->create([
+                'client_uuid' => $clientUuid,
                 'patrol_run_id' => $patrol->id,
                 'checkpoint_id' => $checkpoint->id,
-                'reviewed_at' => now(),
+                'reviewed_at' => $reviewedAt ?? now(),
                 'outcome' => $outcome,
                 'is_urgent' => $isUrgent,
                 'urgent_notes' => $isUrgent ? $urgentNotes : null,
@@ -70,9 +74,11 @@ class PatrolVisitRecorder
             return;
         }
 
+        $lastReviewedAt = $patrol->visits()->max('reviewed_at');
+
         $patrol->update([
             'status' => PatrolRunStatus::Completed,
-            'finished_at' => now(),
+            'finished_at' => $lastReviewedAt ?? now(),
         ]);
     }
 }

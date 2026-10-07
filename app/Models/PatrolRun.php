@@ -18,10 +18,11 @@ use Illuminate\Support\Carbon;
  * @property PatrolRunStatus $status
  * @property Carbon $started_at
  * @property Carbon|null $finished_at
+ * @property string|null $client_uuid
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['user_id', 'round_id', 'status', 'started_at', 'finished_at'])]
+#[Fillable(['user_id', 'round_id', 'status', 'started_at', 'finished_at', 'client_uuid'])]
 class PatrolRun extends Model
 {
     /** @use HasFactory<PatrolRunFactory> */

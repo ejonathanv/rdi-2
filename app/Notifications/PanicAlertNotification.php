@@ -31,6 +31,10 @@ class PanicAlertNotification extends Notification implements ShouldQueue
             $body .= ' · '.$this->alert->patrolRun->round->title;
         }
 
+        if ($this->alert->wasRecordedOffline()) {
+            $body .= ' · Registrada sin conexión a las '.$this->alert->triggeredAt()->timezone(config('app.timezone'))->format('H:i');
+        }
+
         return [
             'title' => 'Botón de pánico',
             'body' => $body,

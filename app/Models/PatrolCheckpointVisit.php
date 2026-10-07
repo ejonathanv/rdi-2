@@ -21,10 +21,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $urgent_notes
  * @property Carbon|null $urgent_resolved_at
  * @property int|null $urgent_resolved_by_id
+ * @property string|null $client_uuid
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable([
+    'client_uuid',
     'patrol_run_id',
     'checkpoint_id',
     'reviewed_at',

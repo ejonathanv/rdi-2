@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { registerServiceWorker } from '@/guard-app/register-sw';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
@@ -39,3 +40,5 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+void registerServiceWorker();
