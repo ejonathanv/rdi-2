@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\CheckpointQuestionController;
 use App\Http\Controllers\CheckpointQuestionnaireController;
 use App\Http\Controllers\CheckpointScanController;
+use App\Http\Controllers\CheckpointTokenController;
 use App\Http\Controllers\CurrentAreaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuardAppController;
@@ -103,6 +104,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('manage.areas')->group(function () {
+        Route::post('rounds/tokens/regenerar', [CheckpointTokenController::class, 'regenerateAll'])
+            ->name('rounds.tokens.regenerate-all');
+        Route::post('rounds/{round}/tokens/regenerar', [CheckpointTokenController::class, 'regenerate'])
+            ->name('rounds.tokens.regenerate');
+        Route::get('rounds/{round}/qr/imprimir', [CheckpointTokenController::class, 'print'])
+            ->name('rounds.qr.print');
+
         Route::resource('areas', AreaController::class)->except(['show']);
         Route::resource('users', UserController::class)->except(['show']);
         Route::resource('rounds', RoundController::class)->except(['show']);

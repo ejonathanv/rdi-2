@@ -11,6 +11,7 @@ use App\Models\CheckpointQuestionOption;
 use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\CheckpointTokenRotator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -42,7 +43,8 @@ class GuardOfflinePackageTest extends TestCase
             ->assertJsonCount(1, 'rounds')
             ->assertJsonPath('rounds.0.id', $round->id)
             ->assertJsonCount(1, 'rounds.0.checkpoints')
-            ->assertJsonPath('rounds.0.checkpoints.0.token', $checkpoint->token)
+            ->assertJsonPath('rounds.0.checkpoints.0.token_hash', hash('sha256', $checkpoint->token))
+            ->assertJsonMissingPath('rounds.0.checkpoints.0.token')
             ->assertJsonPath('rounds.0.checkpoints.0.questions.0.id', $question->id)
             ->assertJsonCount(1, 'rounds.0.checkpoints.0.questions.0.options')
             ->assertJsonPath('areas.0.emergency_contacts.0.phone', '5511112222')
@@ -58,6 +60,18 @@ class GuardOfflinePackageTest extends TestCase
 
         $first = $this->actingAs($guard)->getJson(route('guard.offline.package'))->json('version');
         $round->update(['title' => 'Nuevo título']);
+        $second = $this->actingAs($guard)->getJson(route('guard.offline.package'))->json('version');
+
+        $this->assertNotSame($first, $second);
+    }
+
+    public function test_version_changes_when_qr_tokens_are_regenerated(): void
+    {
+        [$guard, $round] = $this->guardWithRound();
+        Checkpoint::factory()->create(['round_id' => $round->id]);
+
+        $first = $this->actingAs($guard)->getJson(route('guard.offline.package'))->json('version');
+        app(CheckpointTokenRotator::class)->rotate(Checkpoint::query()->where('round_id', $round->id));
         $second = $this->actingAs($guard)->getJson(route('guard.offline.package'))->json('version');
 
         $this->assertNotSame($first, $second);

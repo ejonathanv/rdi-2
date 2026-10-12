@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 /**
- * Full-screen camera QR reader. `onDetected` returns an error message to keep
- * scanning, or null to accept the token and stop the camera.
+ * Full-screen camera QR reader. `onDetected` returns (or resolves) an error
+ * message to keep scanning, or null to accept the token and stop the camera.
  */
 export function QrScanner({
     title = 'Escanear QR del punto',
@@ -15,7 +15,7 @@ export function QrScanner({
 }: {
     title?: string;
     hint?: string;
-    onDetected: (token: string) => string | null;
+    onDetected: (token: string) => string | null | Promise<string | null>;
     onAccepted: (token: string, raw: string) => void;
     onClose: () => void;
 }) {
@@ -47,21 +47,27 @@ export function QrScanner({
                     }
 
                     const token = extractToken(decoded);
-                    const detectionError = detectRef.current(token);
-
-                    if (detectionError) {
-                        setError(detectionError);
-
-                        return;
-                    }
-
                     handledRef.current = true;
-                    setScanning(false);
 
-                    void scanner
-                        .stop()
-                        .catch(() => undefined)
-                        .finally(() => acceptRef.current(token, decoded));
+                    void Promise.resolve(detectRef.current(token))
+                        .catch(() => 'No se pudo validar el QR.')
+                        .then((detectionError) => {
+                            if (detectionError) {
+                                setError(detectionError);
+                                handledRef.current = false;
+
+                                return;
+                            }
+
+                            setScanning(false);
+
+                            void scanner
+                                .stop()
+                                .catch(() => undefined)
+                                .finally(() =>
+                                    acceptRef.current(token, decoded),
+                                );
+                        });
                 },
                 () => undefined,
             )

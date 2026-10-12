@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Database\Factories\CheckpointFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,11 +21,13 @@ use Illuminate\Support\Str;
  * @property string|null $instructions
  * @property int $position
  * @property string $token
+ * @property string|null $previous_token
+ * @property Carbon|null $token_rotated_at
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['round_id', 'name', 'instructions', 'position', 'token', 'is_active'])]
+#[Fillable(['round_id', 'name', 'instructions', 'position', 'token', 'previous_token', 'token_rotated_at', 'is_active'])]
 class Checkpoint extends Model
 {
     /** @use HasFactory<CheckpointFactory> */
@@ -45,7 +50,30 @@ class Checkpoint extends Model
         return [
             'is_active' => 'boolean',
             'position' => 'integer',
+            'token_rotated_at' => 'datetime',
         ];
+    }
+
+    public function tokenHash(): string
+    {
+        return hash('sha256', $this->token);
+    }
+
+    /**
+     * Matches the current token, or the previous one when the capture happened before it was rotated.
+     *
+     * @param  Builder<Checkpoint>  $query
+     */
+    #[Scope]
+    protected function matchingSyncToken(Builder $query, string $token, CarbonInterface $capturedAt): void
+    {
+        $query->where(function (Builder $query) use ($token, $capturedAt): void {
+            $query->where('token', $token)
+                ->orWhere(function (Builder $query) use ($token, $capturedAt): void {
+                    $query->where('previous_token', $token)
+                        ->where('token_rotated_at', '>', $capturedAt);
+                });
+        });
     }
 
     /**

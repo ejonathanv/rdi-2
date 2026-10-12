@@ -93,7 +93,7 @@ class GuardPatrolController extends Controller
                         'name' => $checkpoint->name,
                         'instructions' => $checkpoint->instructions,
                         'position' => $checkpoint->position,
-                        'token' => $checkpoint->token,
+                        'token_hash' => $checkpoint->tokenHash(),
                         'questions_count' => $checkpoint->active_questions_count,
                         'reviewed' => $visit !== null,
                         'reviewed_at' => $visit?->reviewed_at->toIso8601String(),

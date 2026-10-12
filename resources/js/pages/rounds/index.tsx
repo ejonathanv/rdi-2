@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
+import CheckpointTokenController from '@/actions/App/Http/Controllers/CheckpointTokenController';
 import Heading from '@/components/heading';
+import { RegenerateQrDialog } from '@/components/regenerate-qr-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,22 +43,37 @@ export default function RoundsIndex({
                         title="Recorridos"
                         description={`Configuración para ${area.name} (${area.code})`}
                     />
-                    <Button asChild>
-                        <Link href={roundsCreate()}>
-                            <Plus className="size-4" />
-                            Nuevo recorrido
-                        </Link>
-                    </Button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        {rounds.length > 0 && (
+                            <RegenerateQrDialog
+                                url={CheckpointTokenController.regenerateAll.url()}
+                                label="Regenerar todos los QR"
+                                description={`Se generarán QR nuevos para todos los puntos de todos los recorridos de ${area.name}.`}
+                            />
+                        )}
+                        <Button asChild>
+                            <Link href={roundsCreate()}>
+                                <Plus className="size-4" />
+                                Nuevo recorrido
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="overflow-hidden rounded-xl border">
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 text-left">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Título</th>
-                                <th className="px-4 py-3 font-medium">Puntos</th>
-                                <th className="px-4 py-3 font-medium">Estado</th>
-                                <th className="px-4 py-3 font-medium text-right">
+                                <th className="px-4 py-3 font-medium">
+                                    Título
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Puntos
+                                </th>
+                                <th className="px-4 py-3 font-medium">
+                                    Estado
+                                </th>
+                                <th className="px-4 py-3 text-right font-medium">
                                     Acciones
                                 </th>
                             </tr>

@@ -1,10 +1,19 @@
 import { Form, Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Plus, QrCode, Trash2 } from 'lucide-react';
+import {
+    ArrowDown,
+    ArrowUp,
+    Plus,
+    Printer,
+    QrCode,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import CheckpointController from '@/actions/App/Http/Controllers/CheckpointController';
+import CheckpointTokenController from '@/actions/App/Http/Controllers/CheckpointTokenController';
 import RoundController from '@/actions/App/Http/Controllers/RoundController';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { RegenerateQrDialog } from '@/components/regenerate-qr-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -85,6 +94,7 @@ export default function RoundsEdit({
 
     function moveCheckpoint(index: number, direction: -1 | 1) {
         const nextIndex = index + direction;
+
         if (nextIndex < 0 || nextIndex >= round.checkpoints.length) {
             return;
         }
@@ -132,7 +142,7 @@ export default function RoundsEdit({
                                     name="instructions"
                                     rows={5}
                                     defaultValue={round.instructions ?? ''}
-                                    className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                    className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 />
                                 <InputError message={errors.instructions} />
                             </div>
@@ -212,11 +222,34 @@ export default function RoundsEdit({
                 </Form>
 
                 <div className="space-y-4">
-                    <Heading
-                        variant="small"
-                        title="Puntos de revisión"
-                        description="Ordena los puntos que el guardia debe revisar. El token QR se usará en una fase posterior."
-                    />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <Heading
+                            variant="small"
+                            title="Puntos de revisión"
+                            description="Ordena los puntos que el guardia debe revisar y descarga o imprime su QR."
+                        />
+                        {round.checkpoints.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link
+                                        href={CheckpointTokenController.print(
+                                            round,
+                                        )}
+                                    >
+                                        <Printer className="size-4" />
+                                        Imprimir QR
+                                    </Link>
+                                </Button>
+                                <RegenerateQrDialog
+                                    url={CheckpointTokenController.regenerate.url(
+                                        round,
+                                    )}
+                                    label="Regenerar QR"
+                                    description={`Se generarán QR nuevos para todos los puntos de ${round.title}.`}
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     <div className="space-y-3">
                         {round.checkpoints.length === 0 && (
@@ -276,7 +309,7 @@ export default function RoundsEdit({
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
                                             />
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -368,8 +401,7 @@ export default function RoundsEdit({
                                                 size="icon"
                                                 disabled={
                                                     index ===
-                                                    round.checkpoints.length -
-                                                        1
+                                                    round.checkpoints.length - 1
                                                 }
                                                 onClick={() =>
                                                     moveCheckpoint(index, 1)
@@ -485,9 +517,7 @@ export default function RoundsEdit({
                                 required
                                 placeholder="Entrada principal"
                             />
-                            <InputError
-                                message={checkpointForm.errors.name}
-                            />
+                            <InputError message={checkpointForm.errors.name} />
                         </div>
 
                         <div className="grid gap-2">
@@ -504,7 +534,7 @@ export default function RoundsEdit({
                                         e.target.value,
                                     )
                                 }
-                                className="border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+                                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
                                 placeholder="Qué debe revisar el guardia en este punto"
                             />
                         </div>

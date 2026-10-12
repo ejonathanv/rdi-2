@@ -56,7 +56,7 @@ class GuardOfflinePackageBuilder
                     'name' => $checkpoint->name,
                     'instructions' => $checkpoint->instructions,
                     'position' => $checkpoint->position,
-                    'token' => $checkpoint->token,
+                    'token_hash' => $checkpoint->tokenHash(),
                     'questions' => $checkpoint->questions->map(fn (CheckpointQuestion $question) => [
                         'id' => $question->id,
                         'body' => $question->body,

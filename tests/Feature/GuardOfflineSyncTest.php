@@ -15,6 +15,7 @@ use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\CheckpointTokenRotator;
 use App\Services\IncidentAiProcessor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -192,6 +193,44 @@ class GuardOfflineSyncTest extends TestCase
             ->assertJsonValidationErrors('checkpoint_token');
 
         $this->assertSame(1, PatrolCheckpointVisit::query()->count());
+    }
+
+    public function test_visit_sync_accepts_previous_token_only_when_captured_before_rotation(): void
+    {
+        $patrol = $this->offlinePatrol();
+        $checkpoint = Checkpoint::factory()->create(['round_id' => $this->round->id]);
+        Checkpoint::factory()->create(['round_id' => $this->round->id]);
+        $oldToken = $checkpoint->token;
+
+        $this->travelTo(now()->subMinutes(10));
+        $capturedBeforeRotation = now()->toIso8601String();
+        $this->travelBack();
+
+        app(CheckpointTokenRotator::class)->rotate(Checkpoint::query()->whereKey($checkpoint->id));
+
+        $payload = fn (string $reviewedAt) => [
+            'client_uuid' => (string) Str::uuid(),
+            'patrol_client_uuid' => $patrol->client_uuid,
+            'checkpoint_token' => $oldToken,
+            'outcome' => PatrolVisitOutcome::AllClear->value,
+            'reviewed_at' => $reviewedAt,
+        ];
+
+        $this->travel(1)->minutes();
+
+        $this->actingAs($this->guard)
+            ->postJson(route('guard.sync.visits'), $payload(now()->toIso8601String()))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('checkpoint_token');
+
+        $this->actingAs($this->guard)
+            ->postJson(route('guard.sync.visits'), $payload($capturedBeforeRotation))
+            ->assertCreated();
+
+        $this->assertDatabaseHas('patrol_checkpoint_visits', [
+            'patrol_run_id' => $patrol->id,
+            'checkpoint_id' => $checkpoint->id,
+        ]);
     }
 
     public function test_visit_sync_accepts_checkpoint_deactivated_after_download(): void

@@ -15,6 +15,7 @@ createInertiaApp({
         switch (true) {
             case name === 'welcome':
             case name === 'landingpage':
+            case name === 'rounds/print-qr':
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ConfirmDialog } from '../components/confirm-dialog';
-import { reportIncident } from '../store';
+import { reportIncident, scannedTokenFor } from '../store';
 import type { GuardData } from '../use-guard-data';
 import type { GuardRoute } from '../use-hash-route';
 
@@ -42,6 +42,7 @@ export function IncidentScreen({
     const invalidCheckpoint =
         checkpointId !== null &&
         (!checkpoint ||
+            !scannedTokenFor(checkpointId) ||
             patrol?.visits.some(
                 (visit) => visit.checkpoint_id === checkpointId,
             ));
@@ -58,7 +59,7 @@ export function IncidentScreen({
             <div className="flex flex-col gap-4">
                 <Heading
                     title="No se puede reportar"
-                    description="El punto ya fue revisado o no pertenece a tu recorrido en curso."
+                    description="El punto ya fue revisado, no pertenece a tu recorrido en curso o debes escanear de nuevo su QR."
                 />
                 <Button onClick={() => navigate({ name: 'home' })}>
                     Volver al inicio

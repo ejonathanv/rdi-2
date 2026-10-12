@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import UrgentReviewFields from '@/components/urgent-review-fields';
 import { cn } from '@/lib/utils';
 import { ConfirmDialog } from '../components/confirm-dialog';
-import { recordAllClear, recordQuestionnaire } from '../store';
+import { recordAllClear, recordQuestionnaire, scannedTokenFor } from '../store';
 import type { GuardData } from '../use-guard-data';
 import type { GuardRoute } from '../use-hash-route';
 
@@ -41,7 +41,13 @@ export function CheckpointScreen({
         (visit) => visit.checkpoint_id === checkpointId,
     );
 
-    if (!patrol || !round || !checkpoint || alreadyVisited) {
+    if (
+        !patrol ||
+        !round ||
+        !checkpoint ||
+        alreadyVisited ||
+        !scannedTokenFor(checkpoint.id)
+    ) {
         return (
             <div className="flex flex-col gap-4">
                 <Heading
@@ -49,7 +55,7 @@ export function CheckpointScreen({
                     description={
                         alreadyVisited
                             ? 'Este punto ya fue revisado en el recorrido actual.'
-                            : 'Escanea el QR de un punto pendiente de tu recorrido en curso.'
+                            : 'Escanea el QR del punto para revisarlo.'
                     }
                 />
                 <Button onClick={() => navigate({ name: 'patrol' })}>

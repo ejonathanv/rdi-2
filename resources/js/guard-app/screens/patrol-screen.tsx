@@ -1,8 +1,10 @@
 import { CheckCircle2, Circle, QrCode } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Heading from '@/components/heading';
 import { QrScanner } from '@/components/qr-scanner';
 import { Button } from '@/components/ui/button';
+import { canHashInBrowser } from '@/lib/sha256';
+import { matchScannedToken } from '../store';
 import type { GuardData } from '../use-guard-data';
 import type { GuardRoute } from '../use-hash-route';
 
@@ -20,6 +22,7 @@ export function PatrolScreen({
     navigate: (route: GuardRoute) => void;
 }) {
     const [scanning, setScanning] = useState(false);
+    const scannedCheckpointId = useRef<number | null>(null);
     const patrol = data.activePatrol;
     const round = patrol
         ? data.pkg!.rounds.find((item) => item.id === patrol.round_id)
@@ -59,9 +62,6 @@ export function PatrolScreen({
 
     const visits = new Map(
         patrol.visits.map((visit) => [visit.checkpoint_id, visit]),
-    );
-    const pending = round.checkpoints.filter(
-        (checkpoint) => !visits.has(checkpoint.id),
     );
 
     return (
@@ -112,31 +112,32 @@ export function PatrolScreen({
             {scanning && (
                 <QrScanner
                     onClose={() => setScanning(false)}
-                    onDetected={(token) => {
-                        const checkpoint = round.checkpoints.find(
-                            (item) => item.token === token,
-                        );
-
-                        if (!checkpoint) {
-                            return 'El QR no corresponde a ningún punto de este recorrido.';
+                    onDetected={async (token) => {
+                        if (!canHashInBrowser()) {
+                            return 'Este navegador no puede validar el QR. Abre la app con HTTPS.';
                         }
 
-                        if (!pending.includes(checkpoint)) {
+                        const result = await matchScannedToken(round.id, token);
+
+                        if (result.kind === 'not_found') {
+                            return 'QR no válido o desactualizado para este recorrido.';
+                        }
+
+                        if (visits.has(result.checkpoint.id)) {
                             return 'Este punto ya fue revisado en el recorrido actual.';
                         }
 
+                        scannedCheckpointId.current = result.checkpoint.id;
+
                         return null;
                     }}
-                    onAccepted={(token) => {
-                        const checkpoint = round.checkpoints.find(
-                            (item) => item.token === token,
-                        );
+                    onAccepted={() => {
                         setScanning(false);
 
-                        if (checkpoint) {
+                        if (scannedCheckpointId.current !== null) {
                             navigate({
                                 name: 'checkpoint',
-                                checkpointId: checkpoint.id,
+                                checkpointId: scannedCheckpointId.current,
                             });
                         }
                     }}

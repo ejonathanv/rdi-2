@@ -1,3 +1,4 @@
+import { sha256Hex } from '../lib/sha256';
 import { packageMethod as offlinePackage } from '../routes/guard/offline';
 import { enqueue, getKv, patrolsForUser, savePatrol, setKv } from './db';
 import { BRANDING_CACHE, requestBackgroundSync, syncOutbox } from './sync';
@@ -193,6 +194,65 @@ export async function startPatrol(
     return patrol;
 }
 
+/**
+ * Real tokens never come in the package (only their hash), so the one read
+ * from the QR is kept in memory until the visit is queued.
+ */
+const scannedTokens = new Map<number, string>();
+
+export function scannedTokenFor(checkpointId: number): string | null {
+    return scannedTokens.get(checkpointId) ?? null;
+}
+
+function requireScannedToken(checkpointId: number): string {
+    const token = scannedTokens.get(checkpointId);
+
+    if (!token) {
+        throw new Error('Escanea de nuevo el QR del punto.');
+    }
+
+    return token;
+}
+
+export type ScanResult =
+    { kind: 'found'; checkpoint: OfflineCheckpoint } | { kind: 'not_found' };
+
+/**
+ * Matches the scanned QR against the package hashes, refreshing the package
+ * once when online in case the QR codes were regenerated.
+ */
+export async function matchScannedToken(
+    roundId: number,
+    token: string,
+): Promise<ScanResult> {
+    const tokenHash = await sha256Hex(token);
+
+    const find = async (): Promise<OfflineCheckpoint | undefined> => {
+        const pkg = await getKv('package');
+
+        return pkg?.rounds
+            .find((round) => round.id === roundId)
+            ?.checkpoints.find(
+                (checkpoint) => checkpoint.token_hash === tokenHash,
+            );
+    };
+
+    let checkpoint = await find();
+
+    if (!checkpoint && navigator.onLine) {
+        await refreshPackage();
+        checkpoint = await find();
+    }
+
+    if (!checkpoint) {
+        return { kind: 'not_found' };
+    }
+
+    scannedTokens.set(checkpoint.id, token);
+
+    return { kind: 'found', checkpoint };
+}
+
 type VisitInput = {
     patrol: LocalPatrol;
     round: OfflineRound;
@@ -218,6 +278,7 @@ async function recordVisit(
     extra: Record<string, unknown>,
 ): Promise<LocalPatrol> {
     const reviewedAt = new Date().toISOString();
+    const checkpointToken = requireScannedToken(input.checkpoint.id);
     const photos = await toStoredPhotos(input.photos);
     const patrol = await markVisited(input, outcome, reviewedAt);
 
@@ -228,7 +289,7 @@ async function recordVisit(
         payload: {
             client_uuid: newUuid(),
             patrol_client_uuid: input.patrol.client_uuid,
-            checkpoint_token: input.checkpoint.token,
+            checkpoint_token: checkpointToken,
             outcome,
             is_urgent: input.isUrgent,
             urgent_notes: input.isUrgent ? input.urgentNotes : null,
@@ -237,6 +298,7 @@ async function recordVisit(
         },
         photos,
     });
+    scannedTokens.delete(input.checkpoint.id);
     await afterChange();
 
     return patrol;
@@ -306,6 +368,9 @@ type IncidentInput = {
 export async function reportIncident(input: IncidentInput): Promise<void> {
     const occurredAt = new Date().toISOString();
     const context = input.checkpointContext;
+    const checkpointToken = context
+        ? requireScannedToken(context.checkpoint.id)
+        : null;
     const photos = await toStoredPhotos(input.photos);
 
     if (context) {
@@ -327,13 +392,18 @@ export async function reportIncident(input: IncidentInput): Promise<void> {
             area_id: context ? null : input.areaId,
             message: input.message,
             is_urgent: input.isUrgent,
-            checkpoint_token: context?.checkpoint.token ?? null,
+            checkpoint_token: checkpointToken,
             patrol_client_uuid: context?.patrol.client_uuid ?? null,
             visit_client_uuid: context ? newUuid() : null,
             occurred_at: occurredAt,
         },
         photos,
     });
+
+    if (context) {
+        scannedTokens.delete(context.checkpoint.id);
+    }
+
     await afterChange();
 }
 

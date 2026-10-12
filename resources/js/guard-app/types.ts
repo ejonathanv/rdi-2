@@ -21,7 +21,7 @@ export type OfflineCheckpoint = {
     name: string;
     instructions: string | null;
     position: number;
-    token: string;
+    token_hash: string;
     questions: OfflineQuestion[];
 };
 

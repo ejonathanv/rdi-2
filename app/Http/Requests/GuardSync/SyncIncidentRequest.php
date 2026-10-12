@@ -72,13 +72,13 @@ class SyncIncidentRequest extends FormRequest
             $patrol = $this->ownPatrolOrConflict((string) $this->input('patrol_client_uuid'));
 
             $checkpoint = Checkpoint::query()
-                ->where('token', $token)
+                ->matchingSyncToken($token, $this->occurredAt())
                 ->where('round_id', $patrol->round_id)
                 ->with('round.area')
                 ->first();
 
             if (! $checkpoint) {
-                $validator->errors()->add('checkpoint_token', __('El punto no pertenece a este recorrido.'));
+                $validator->errors()->add('checkpoint_token', __('El QR no es válido para este recorrido o fue regenerado.'));
 
                 return;
             }

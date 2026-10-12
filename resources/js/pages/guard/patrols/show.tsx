@@ -13,7 +13,7 @@ type CheckpointRow = {
     name: string;
     instructions: string | null;
     position: number;
-    token: string;
+    token_hash: string;
     questions_count: number;
     reviewed: boolean;
     reviewed_at: string | null;
@@ -73,7 +73,11 @@ export default function GuardPatrolShow({ patrol }: { patrol: PatrolData }) {
                         </>
                     )}
                     {patrol.duration_seconds !== null && (
-                        <> · Duración: {formatDuration(patrol.duration_seconds)}</>
+                        <>
+                            {' '}
+                            · Duración:{' '}
+                            {formatDuration(patrol.duration_seconds)}
+                        </>
                     )}
                 </p>
 
@@ -165,7 +169,7 @@ export default function GuardPatrolShow({ patrol }: { patrol: PatrolData }) {
                 <CheckpointQrScanner
                     patrolId={patrol.id}
                     checkpointId={scanningCheckpoint.id}
-                    expectedToken={scanningCheckpoint.token}
+                    expectedTokenHash={scanningCheckpoint.token_hash}
                     onClose={() => setScanningCheckpoint(null)}
                 />
             )}
