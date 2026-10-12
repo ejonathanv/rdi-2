@@ -15,6 +15,8 @@ import type { GuardData } from './use-guard-data';
 import { useHashRoute } from './use-hash-route';
 import type { GuardRoute } from './use-hash-route';
 
+const DEFAULT_LOGO_URL = '/img/rdi-logo.svg';
+
 function csrfToken(): string {
     return (
         document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
@@ -45,6 +47,15 @@ export function GuardApp({ logoUrl }: { logoUrl: string }) {
                             src={data.pkg?.branding.logo_url ?? logoUrl}
                             alt="Logo"
                             className="h-8 w-auto max-w-32 object-contain"
+                            onError={(event) => {
+                                if (
+                                    !event.currentTarget.src.endsWith(
+                                        DEFAULT_LOGO_URL,
+                                    )
+                                ) {
+                                    event.currentTarget.src = DEFAULT_LOGO_URL;
+                                }
+                            }}
                         />
                     </div>
                     <SyncStatus

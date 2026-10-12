@@ -17,6 +17,8 @@ export const OUTBOX_SYNC_TAG = 'rdi-outbox';
 
 export const SYNC_CHANNEL = 'rdi-guard-sync';
 
+export const BRANDING_CACHE = 'rdi-branding-v2';
+
 const MAX_BACKOFF_MS = 15 * 60 * 1000;
 
 export type SyncResult = {

@@ -1,6 +1,6 @@
 import { packageMethod as offlinePackage } from '../routes/guard/offline';
 import { enqueue, getKv, patrolsForUser, savePatrol, setKv } from './db';
-import { requestBackgroundSync, syncOutbox } from './sync';
+import { BRANDING_CACHE, requestBackgroundSync, syncOutbox } from './sync';
 import type {
     LocalPatrol,
     OfflineCheckpoint,
@@ -58,10 +58,30 @@ export async function refreshPackage(): Promise<PackageRefreshResult> {
     await setKv('csrf_token', data.csrf_token);
     await setKv('auth_required', false);
     await adoptServerPatrol(data);
+    await cacheLogo(data.branding.logo_url);
 
     notifyDataChanged();
 
     return 'updated';
+}
+
+/**
+ * Keeps the logo available offline even if it was never rendered online.
+ */
+async function cacheLogo(logoUrl: string): Promise<void> {
+    if (!('caches' in window)) {
+        return;
+    }
+
+    try {
+        const cache = await caches.open(BRANDING_CACHE);
+
+        if (!(await cache.match(logoUrl))) {
+            await cache.add(logoUrl);
+        }
+    } catch {
+        // The header falls back to the default logo.
+    }
 }
 
 /**

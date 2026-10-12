@@ -1,10 +1,11 @@
 /// <reference lib="webworker" />
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst } from 'workbox-strategies';
-import { OUTBOX_SYNC_TAG, syncOutbox } from './guard-app/sync';
+import { NetworkFirst } from 'workbox-strategies';
+import { BRANDING_CACHE, OUTBOX_SYNC_TAG, syncOutbox } from './guard-app/sync';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -38,11 +39,19 @@ registerRoute(
         url.origin === self.location.origin &&
         (url.pathname.startsWith('/img/') ||
             url.pathname.startsWith('/storage/branding/')),
-    new CacheFirst({
-        cacheName: 'rdi-branding',
-        plugins: [new ExpirationPlugin({ maxEntries: 30 })],
+    new NetworkFirst({
+        cacheName: BRANDING_CACHE,
+        networkTimeoutSeconds: 3,
+        plugins: [
+            new CacheableResponsePlugin({ statuses: [200] }),
+            new ExpirationPlugin({ maxEntries: 30 }),
+        ],
     }),
 );
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(caches.delete('rdi-branding'));
+});
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
