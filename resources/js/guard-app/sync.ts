@@ -11,7 +11,7 @@ import {
     setKv,
     updateOutboxItem,
 } from './db';
-import type { OutboxItem, OutboxType } from './types';
+import type { OutboxItem, OutboxType, StoredPhoto } from './types';
 
 export const OUTBOX_SYNC_TAG = 'rdi-outbox';
 
@@ -151,6 +151,16 @@ async function send(
     csrfToken: string | undefined,
 ): Promise<SendOutcome> {
     let response: Response;
+    let body: FormData;
+
+    try {
+        body = await buildBody(item);
+    } catch {
+        return {
+            kind: 'rejected',
+            message: 'No se pudieron leer las fotos guardadas.',
+        };
+    }
 
     try {
         response = await fetch(endpoints[item.type](), {
@@ -161,7 +171,7 @@ async function send(
                 'X-Requested-With': 'XMLHttpRequest',
                 ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
             },
-            body: buildBody(item),
+            body,
         });
     } catch {
         return { kind: 'offline', message: 'Sin conexión' };
@@ -190,16 +200,28 @@ async function send(
     return { kind: 'retry', message: await errorMessage(response) };
 }
 
-function buildBody(item: OutboxItem): FormData {
+async function buildBody(item: OutboxItem): Promise<FormData> {
     const form = new FormData();
 
     appendValue(form, '', item.payload);
 
-    item.photos.forEach((photo, index) => {
+    const photos = await Promise.all(item.photos.map(toUploadBlob));
+
+    photos.forEach((photo, index) => {
         form.append('photos[]', photo, `foto-${index + 1}.jpg`);
     });
 
     return form;
+}
+
+async function toUploadBlob(photo: StoredPhoto | Blob): Promise<Blob> {
+    if (photo instanceof Blob) {
+        return new Blob([await photo.arrayBuffer()], {
+            type: photo.type || 'image/jpeg',
+        });
+    }
+
+    return new Blob([photo.buffer], { type: photo.type });
 }
 
 function appendValue(form: FormData, key: string, value: unknown): void {

@@ -6,6 +6,7 @@ import type {
     OfflineCheckpoint,
     OfflinePackage,
     OfflineRound,
+    StoredPhoto,
 } from './types';
 
 export const DATA_CHANGED_EVENT = 'rdi-guard-data-changed';
@@ -197,6 +198,7 @@ async function recordVisit(
     extra: Record<string, unknown>,
 ): Promise<LocalPatrol> {
     const reviewedAt = new Date().toISOString();
+    const photos = await toStoredPhotos(input.photos);
     const patrol = await markVisited(input, outcome, reviewedAt);
 
     await enqueue({
@@ -213,11 +215,20 @@ async function recordVisit(
             reviewed_at: reviewedAt,
             ...extra,
         },
-        photos: input.photos,
+        photos,
     });
     await afterChange();
 
     return patrol;
+}
+
+async function toStoredPhotos(files: File[]): Promise<StoredPhoto[]> {
+    return Promise.all(
+        files.map(async (file) => ({
+            buffer: await file.arrayBuffer(),
+            type: file.type || 'image/jpeg',
+        })),
+    );
 }
 
 async function markVisited(
@@ -275,6 +286,7 @@ type IncidentInput = {
 export async function reportIncident(input: IncidentInput): Promise<void> {
     const occurredAt = new Date().toISOString();
     const context = input.checkpointContext;
+    const photos = await toStoredPhotos(input.photos);
 
     if (context) {
         await markVisited(
@@ -300,7 +312,7 @@ export async function reportIncident(input: IncidentInput): Promise<void> {
             visit_client_uuid: context ? newUuid() : null,
             occurred_at: occurredAt,
         },
-        photos: input.photos,
+        photos,
     });
     await afterChange();
 }

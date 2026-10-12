@@ -74,13 +74,22 @@ export type LocalPatrol = {
 
 export type OutboxType = 'patrol' | 'visit' | 'incident' | 'panic';
 
+/**
+ * Safari corrupts Blobs read back from IndexedDB when sent in a FormData,
+ * so photos are persisted as raw bytes.
+ */
+export type StoredPhoto = {
+    buffer: ArrayBuffer;
+    type: string;
+};
+
 export type OutboxItem = {
     id?: number;
     type: OutboxType;
     user_id: number;
     label: string;
     payload: Record<string, unknown>;
-    photos: Blob[];
+    photos: Array<StoredPhoto | Blob>;
     status: 'pending' | 'failed';
     attempts: number;
     next_attempt_at: number;
