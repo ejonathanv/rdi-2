@@ -12,5 +12,6 @@ export type NavItem = {
     icon?: LucideIcon | null;
     isActive?: boolean;
     disabled?: boolean;
+    tourId?: string;
     items?: NavItem[];
 };

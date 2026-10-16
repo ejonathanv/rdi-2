@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Map, Settings } from 'lucide-react';
+import { PRODUCT_TOUR_START_EVENT } from '@/components/product-tour/product-tour';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -24,6 +25,8 @@ export function UserMenuContent({ user }: Props) {
         router.flushAll();
     };
 
+    const canReplayTour = Boolean(user.product_tour_eligible);
+
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
@@ -44,6 +47,20 @@ export function UserMenuContent({ user }: Props) {
                         Configuración
                     </Link>
                 </DropdownMenuItem>
+                {canReplayTour && (
+                    <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => {
+                            cleanup();
+                            window.dispatchEvent(
+                                new Event(PRODUCT_TOUR_START_EVENT),
+                            );
+                        }}
+                    >
+                        <Map className="mr-2" />
+                        Ver recorrido
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

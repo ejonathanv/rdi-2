@@ -30,10 +30,11 @@ use NotificationChannels\WebPush\HasPushSubscriptions;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property Carbon|null $product_tour_completed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'is_super_admin', 'phone', 'notify_via_whatsapp', 'notify_via_sms'])]
+#[Fillable(['name', 'email', 'password', 'is_super_admin', 'phone', 'notify_via_whatsapp', 'notify_via_sms', 'product_tour_completed_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -54,7 +55,27 @@ class User extends Authenticatable implements PasskeyUser
             'is_super_admin' => 'boolean',
             'notify_via_whatsapp' => 'boolean',
             'notify_via_sms' => 'boolean',
+            'product_tour_completed_at' => 'datetime',
         ];
+    }
+
+    public function hasCompletedProductTour(): bool
+    {
+        return $this->product_tour_completed_at !== null;
+    }
+
+    public function isEligibleForProductTour(): bool
+    {
+        return $this->canViewAnyAreaOperations() && ! $this->isGuardOnly();
+    }
+
+    public function markProductTourCompleted(): void
+    {
+        if ($this->hasCompletedProductTour()) {
+            return;
+        }
+
+        $this->forceFill(['product_tour_completed_at' => now()])->save();
     }
 
     /**

@@ -9,6 +9,9 @@ export type User = {
     can_manage_areas?: boolean;
     can_manage_users?: boolean;
     can_view_operations?: boolean;
+    product_tour_completed?: boolean;
+    product_tour_eligible?: boolean;
+    is_guard_only?: boolean;
     created_at: string;
     updated_at: string;
     [key: string]: unknown;

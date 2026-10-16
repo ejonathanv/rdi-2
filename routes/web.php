@@ -22,6 +22,7 @@ use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PanicAlertController;
+use App\Http\Controllers\ProductTourController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoundController;
@@ -38,6 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::put('current-area', [CurrentAreaController::class, 'update'])->name('current-area.update');
+
+    Route::post('product-tour/complete', [ProductTourController::class, 'complete'])
+        ->name('product-tour.complete');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])

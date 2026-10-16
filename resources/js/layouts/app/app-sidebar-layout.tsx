@@ -3,6 +3,7 @@ import { AppFooter } from '@/components/app-footer';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { ProductTour } from '@/components/product-tour/product-tour';
 import type { AppLayoutProps } from '@/types';
 
 export default function AppSidebarLayout({
@@ -17,6 +18,7 @@ export default function AppSidebarLayout({
                 {children}
                 <AppFooter />
             </AppContent>
+            <ProductTour />
         </AppShell>
     );
 }

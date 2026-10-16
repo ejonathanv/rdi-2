@@ -90,12 +90,14 @@ export function AppSidebar() {
                 title: 'Incidencias',
                 href: incidenciasIndex(),
                 icon: TriangleAlert,
+                tourId: 'incidencias',
             });
 
             items.push({
                 title: 'Rondines',
                 href: rondinesIndex(),
                 icon: ClipboardList,
+                tourId: 'rondines',
             });
 
             items.push({
@@ -134,6 +136,7 @@ export function AppSidebar() {
                     title: 'Recorridos',
                     href: roundsIndex(),
                     icon: Route,
+                    tourId: 'recorridos',
                 },
                 {
                     title: 'Categorías',
@@ -158,6 +161,7 @@ export function AppSidebar() {
             items.push({
                 title: 'Configuración',
                 icon: Settings2,
+                tourId: 'configuracion',
                 items: configItems,
             });
         }
@@ -183,12 +187,13 @@ export function AppSidebar() {
                 </SidebarMenu>
 
                 {availableAreas.length > 0 && (
-                    <div className="px-2 pt-2 group-data-[collapsible=icon]:hidden">
+                    <div
+                        className="px-2 pt-2 group-data-[collapsible=icon]:hidden"
+                        data-tour="area-switcher"
+                    >
                         <Select
                             value={
-                                currentArea
-                                    ? String(currentArea.id)
-                                    : undefined
+                                currentArea ? String(currentArea.id) : undefined
                             }
                             onValueChange={(value) => {
                                 router.put(updateCurrentArea.url(), {

@@ -21,7 +21,9 @@ import type { NavItem } from '@/types';
 function itemIsActive(
     item: NavItem,
     isCurrentUrl: ReturnType<typeof useCurrentUrl>['isCurrentUrl'],
-    isCurrentOrParentUrl: ReturnType<typeof useCurrentUrl>['isCurrentOrParentUrl'],
+    isCurrentOrParentUrl: ReturnType<
+        typeof useCurrentUrl
+    >['isCurrentOrParentUrl'],
 ): boolean {
     if (item.href && isCurrentUrl(item.href)) {
         return true;
@@ -63,6 +65,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                         <SidebarMenuButton
                                             tooltip={{ children: item.title }}
                                             isActive={openByDefault}
+                                            data-tour={item.tourId}
                                         >
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
@@ -72,21 +75,33 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                     <CollapsibleContent>
                                         <SidebarMenuSub>
                                             {item.items.map((child) => (
-                                                <SidebarMenuSubItem key={child.title}>
+                                                <SidebarMenuSubItem
+                                                    key={child.title}
+                                                >
                                                     <SidebarMenuSubButton
                                                         asChild
                                                         isActive={
                                                             child.href
-                                                                ? isCurrentUrl(child.href) ||
+                                                                ? isCurrentUrl(
+                                                                      child.href,
+                                                                  ) ||
                                                                   isCurrentOrParentUrl(
                                                                       child.href,
                                                                   )
                                                                 : false
                                                         }
+                                                        data-tour={child.tourId}
                                                     >
-                                                        <Link href={child.href!} prefetch>
-                                                            {child.icon && <child.icon />}
-                                                            <span>{child.title}</span>
+                                                        <Link
+                                                            href={child.href!}
+                                                            prefetch
+                                                        >
+                                                            {child.icon && (
+                                                                <child.icon />
+                                                            )}
+                                                            <span>
+                                                                {child.title}
+                                                            </span>
                                                         </Link>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>
@@ -103,7 +118,9 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton
                                     disabled
-                                    tooltip={{ children: `${item.title} (próximamente)` }}
+                                    tooltip={{
+                                        children: `${item.title} (próximamente)`,
+                                    }}
                                     className="opacity-60"
                                 >
                                     {item.icon && <item.icon />}
@@ -119,6 +136,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 asChild
                                 isActive={isCurrentUrl(item.href)}
                                 tooltip={{ children: item.title }}
+                                data-tour={item.tourId}
                             >
                                 <Link href={item.href} prefetch>
                                     {item.icon && <item.icon />}
