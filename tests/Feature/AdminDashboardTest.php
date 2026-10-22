@@ -97,7 +97,11 @@ class AdminDashboardTest extends TestCase
                 ->has('active_patrols', 1)
                 ->where('active_patrols.0.id', $active->id)
                 ->has('completed_last_7_days', 7)
-                ->has('incidents_last_7_days', 7));
+                ->has('incidents_last_7_days', 7)
+                ->where('incidents_last_7_days.6.date', now()->toDateString())
+                ->where('incidents_last_7_days.6.count', 1)
+                ->where('completed_last_7_days.6.date', now()->toDateString())
+                ->where('completed_last_7_days.6.count', 1));
     }
 
     public function test_dashboard_ignores_other_area_data(): void

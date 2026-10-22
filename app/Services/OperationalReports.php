@@ -24,7 +24,7 @@ class OperationalReports
      *         discarded: int,
      *         urgent: int
      *     },
-     *     by_category: list<array{category: string, total: int, urgent: int, open: int, resolved: int, discarded: int}>,
+     *     by_category: list<array{category_id: int|null, category: string, total: int, urgent: int, open: int, resolved: int, discarded: int}>,
      *     series: list<array{date: string, label: string, count: int}>
      * }
      */
@@ -45,15 +45,21 @@ class OperationalReports
         ];
 
         $byCategory = $incidents
-            ->groupBy(fn (Incident $incident) => $incident->category?->name ?? 'Sin categoría')
-            ->map(fn (Collection $group, string $category) => [
-                'category' => $category,
-                'total' => $group->count(),
-                'urgent' => $group->where('is_urgent', true)->count(),
-                'open' => $group->filter(fn (Incident $incident) => $incident->status->isOpen())->count(),
-                'resolved' => $group->where('status', IncidentStatus::Resuelta)->count(),
-                'discarded' => $group->where('status', IncidentStatus::Descartada)->count(),
-            ])
+            ->groupBy(fn (Incident $incident) => (string) ($incident->incident_category_id ?? 0))
+            ->map(function (Collection $group) {
+                /** @var Incident $sample */
+                $sample = $group->first();
+
+                return [
+                    'category_id' => $sample->incident_category_id,
+                    'category' => $sample->category?->name ?? 'Sin categoría',
+                    'total' => $group->count(),
+                    'urgent' => $group->where('is_urgent', true)->count(),
+                    'open' => $group->filter(fn (Incident $incident) => $incident->status->isOpen())->count(),
+                    'resolved' => $group->where('status', IncidentStatus::Resuelta)->count(),
+                    'discarded' => $group->where('status', IncidentStatus::Descartada)->count(),
+                ];
+            })
             ->sortByDesc('total')
             ->values()
             ->all();
@@ -86,6 +92,7 @@ class OperationalReports
      *         non_urgent_avg_response_label: string|null
      *     },
      *     by_category: list<array{
+     *         category_id: int|null,
      *         category: string,
      *         with_response: int,
      *         avg_response_seconds: int|null,
@@ -145,8 +152,11 @@ class OperationalReports
         $nonUrgentAvgResponse = $this->average($nonUrgentResponse);
 
         $byCategory = $incidents
-            ->groupBy(fn (Incident $incident) => $incident->category?->name ?? 'Sin categoría')
-            ->map(function (Collection $group, string $category) {
+            ->groupBy(fn (Incident $incident) => (string) ($incident->incident_category_id ?? 0))
+            ->map(function (Collection $group) {
+                /** @var Incident $sample */
+                $sample = $group->first();
+
                 $responses = $group
                     ->filter(fn (Incident $incident) => $incident->acknowledged_at !== null)
                     ->map(fn (Incident $incident) => $incident->responseSeconds())
@@ -163,7 +173,8 @@ class OperationalReports
                 $avgResolution = $this->average($resolutions);
 
                 return [
-                    'category' => $category,
+                    'category_id' => $sample->incident_category_id,
+                    'category' => $sample->category?->name ?? 'Sin categoría',
                     'with_response' => $responses->count(),
                     'avg_response_seconds' => $avgResponse,
                     'avg_response_label' => $this->reportBuilder->formatDuration($avgResponse),

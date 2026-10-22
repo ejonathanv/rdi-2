@@ -35,6 +35,8 @@ type Filters = {
     from: string | null;
     to: string | null;
     category_id: number | null;
+    checkpoint_id: number | null;
+    checkpoint: string | null;
 };
 
 type IncidentRow = {
@@ -97,6 +99,10 @@ function buildQuery(filters: Filters): Record<string, string> {
         query.category_id = String(filters.category_id);
     }
 
+    if (filters.checkpoint_id) {
+        query.checkpoint_id = String(filters.checkpoint_id);
+    }
+
     return query;
 }
 
@@ -124,11 +130,20 @@ export default function IncidenciasIndex({
     };
 
     const clearExtraFilters = () => {
-        applyFilters({ from: null, to: null, category_id: null });
+        applyFilters({
+            from: null,
+            to: null,
+            category_id: null,
+            checkpoint_id: null,
+            checkpoint: null,
+        });
     };
 
     const hasExtraFilters = Boolean(
-        filters.from || filters.to || filters.category_id,
+        filters.from ||
+            filters.to ||
+            filters.category_id ||
+            filters.checkpoint_id,
     );
 
     return (
@@ -241,10 +256,18 @@ export default function IncidenciasIndex({
                             size="sm"
                             onClick={clearExtraFilters}
                         >
-                            Limpiar fechas y categoría
+                            Limpiar filtros
                         </Button>
                     )}
                 </div>
+                {filters.checkpoint && (
+                    <p className="text-sm text-muted-foreground">
+                        Filtrado por punto:{' '}
+                        <span className="font-medium text-foreground">
+                            {filters.checkpoint}
+                        </span>
+                    </p>
+                )}
 
                 <div className="overflow-hidden rounded-xl border">
                     <table className="w-full text-sm">

@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\PatrolRunStatus;
+use App\Models\Area;
 use App\Models\PatrolRun;
 use App\Models\Round;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
 
 class PatrolReportBuilder
@@ -125,23 +128,81 @@ class PatrolReportBuilder
             ->latest('started_at')
             ->get();
 
-        return $runs->map(function (PatrolRun $patrol) {
-            $durationSeconds = $patrol->durationInSeconds();
+        return $runs
+            ->map(fn (PatrolRun $patrol) => $this->summarizePatrol($patrol))
+            ->values()
+            ->all();
+    }
 
-            return [
-                'id' => $patrol->id,
-                'status' => $patrol->status->value,
-                'status_label' => $patrol->status->label(),
-                'started_at' => $patrol->started_at->toIso8601String(),
-                'finished_at' => $patrol->finished_at?->toIso8601String(),
-                'duration_seconds' => $durationSeconds,
-                'duration_label' => $this->formatDuration($durationSeconds),
-                'guard' => [
-                    'id' => $patrol->user->id,
-                    'name' => $patrol->user->name,
-                ],
+    /**
+     * @return list<array{
+     *     id: int,
+     *     status: string,
+     *     status_label: string,
+     *     started_at: string,
+     *     finished_at: string|null,
+     *     duration_seconds: int|null,
+     *     duration_label: string|null,
+     *     guard: array{id: int, name: string},
+     *     round: array{id: int, title: string}
+     * }>
+     */
+    public function summarizeCompletedRuns(Area $area, ?CarbonInterface $from, ?CarbonInterface $to): array
+    {
+        $roundIds = $area->rounds()->pluck('id');
+
+        return PatrolRun::query()
+            ->whereIn('round_id', $roundIds)
+            ->where('status', PatrolRunStatus::Completed)
+            ->when($from, fn ($query) => $query->where('finished_at', '>=', $from))
+            ->when($to, fn ($query) => $query->where('finished_at', '<=', $to))
+            ->with(['user:id,name', 'round:id,title'])
+            ->latest('finished_at')
+            ->get()
+            ->map(fn (PatrolRun $patrol) => $this->summarizePatrol($patrol, withRound: true))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     status: string,
+     *     status_label: string,
+     *     started_at: string,
+     *     finished_at: string|null,
+     *     duration_seconds: int|null,
+     *     duration_label: string|null,
+     *     guard: array{id: int, name: string},
+     *     round?: array{id: int, title: string}
+     * }
+     */
+    private function summarizePatrol(PatrolRun $patrol, bool $withRound = false): array
+    {
+        $durationSeconds = $patrol->durationInSeconds();
+
+        $summary = [
+            'id' => $patrol->id,
+            'status' => $patrol->status->value,
+            'status_label' => $patrol->status->label(),
+            'started_at' => $patrol->started_at->toIso8601String(),
+            'finished_at' => $patrol->finished_at?->toIso8601String(),
+            'duration_seconds' => $durationSeconds,
+            'duration_label' => $this->formatDuration($durationSeconds),
+            'guard' => [
+                'id' => $patrol->user->id,
+                'name' => $patrol->user->name,
+            ],
+        ];
+
+        if ($withRound) {
+            $summary['round'] = [
+                'id' => $patrol->round->id,
+                'title' => $patrol->round->title,
             ];
-        })->values()->all();
+        }
+
+        return $summary;
     }
 
     public function formatDuration(?int $seconds): ?string

@@ -1,9 +1,11 @@
 import { Head } from '@inertiajs/react';
+import { DayBars, type DayCount } from '@/components/day-bars';
 import Heading from '@/components/heading';
 import {
     ReportDateFilters,
     type ReportFilters,
 } from '@/components/report-date-filters';
+import TextLink from '@/components/text-link';
 import {
     Card,
     CardContent,
@@ -11,6 +13,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { incidentListUrl } from '@/lib/list-filters';
 import { volumen } from '@/routes/reportes';
 
 type AreaSummary = {
@@ -19,13 +22,8 @@ type AreaSummary = {
     code: string;
 };
 
-type DayCount = {
-    date: string;
-    label: string;
-    count: number;
-};
-
 type CategoryRow = {
+    category_id: number | null;
     category: string;
     total: number;
     urgent: number;
@@ -45,37 +43,6 @@ type Report = {
     by_category: CategoryRow[];
     series: DayCount[];
 };
-
-function SeriesBars({ days }: { days: DayCount[] }) {
-    const maxCount = Math.max(1, ...days.map((day) => day.count));
-
-    return (
-        <div className="flex gap-1 overflow-x-auto pb-2">
-            {days.map((day) => (
-                <div
-                    key={day.date}
-                    className="flex w-8 shrink-0 flex-col items-center gap-2"
-                    title={`${day.label}: ${day.count}`}
-                >
-                    <div className="flex h-28 w-full items-end justify-center rounded-lg bg-muted/40 px-1 py-2">
-                        <div
-                            className="w-full rounded-t bg-primary"
-                            style={{
-                                height: `${Math.max(
-                                    day.count === 0 ? 0 : 12,
-                                    (day.count / maxCount) * 100,
-                                )}%`,
-                            }}
-                        />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">
-                        {day.label}
-                    </span>
-                </div>
-            ))}
-        </div>
-    );
-}
 
 export default function ReportesVolumen({
     area,
@@ -128,7 +95,7 @@ export default function ReportesVolumen({
                     <CardHeader>
                         <CardTitle>Serie diaria</CardTitle>
                         <CardDescription>
-                            Incidencias creadas por día en el periodo
+                            Clic en un día para ver esas incidencias
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -137,7 +104,17 @@ export default function ReportesVolumen({
                                 No hay incidencias en este periodo.
                             </p>
                         ) : (
-                            <SeriesBars days={report.series} />
+                            <DayBars
+                                days={report.series}
+                                layout="scroll"
+                                countNoun="incidencias"
+                                hrefForDay={(day) =>
+                                    incidentListUrl({
+                                        from: day.date,
+                                        to: day.date,
+                                    })
+                                }
+                            />
                         )}
                     </CardContent>
                 </Card>
@@ -176,8 +153,25 @@ export default function ReportesVolumen({
                                 </tr>
                             )}
                             {report.by_category.map((row) => (
-                                <tr key={row.category} className="border-t">
-                                    <td className="px-4 py-3">{row.category}</td>
+                                <tr
+                                    key={row.category_id ?? row.category}
+                                    className="border-t"
+                                >
+                                    <td className="px-4 py-3">
+                                        {row.category_id ? (
+                                            <TextLink
+                                                href={incidentListUrl({
+                                                    from: filters.from,
+                                                    to: filters.to,
+                                                    category_id: row.category_id,
+                                                })}
+                                            >
+                                                {row.category}
+                                            </TextLink>
+                                        ) : (
+                                            row.category
+                                        )}
+                                    </td>
                                     <td className="px-4 py-3">{row.total}</td>
                                     <td className="px-4 py-3">{row.urgent}</td>
                                     <td className="px-4 py-3">{row.open}</td>

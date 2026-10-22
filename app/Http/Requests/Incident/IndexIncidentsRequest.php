@@ -34,6 +34,17 @@ class IndexIncidentsRequest extends FormRequest
                     fn ($query) => $query->where('area_id', $areaId),
                 ),
             ],
+            'checkpoint_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('checkpoints', 'id')->where(function ($query) use ($areaId) {
+                    $query->whereIn('round_id', function ($subquery) use ($areaId) {
+                        $subquery->select('id')
+                            ->from('rounds')
+                            ->where('area_id', $areaId);
+                    });
+                }),
+            ],
         ];
     }
 
@@ -46,6 +57,7 @@ class IndexIncidentsRequest extends FormRequest
             'from' => 'fecha desde',
             'to' => 'fecha hasta',
             'category_id' => 'categoría',
+            'checkpoint_id' => 'punto',
             'status' => 'estado',
         ];
     }

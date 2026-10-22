@@ -4,6 +4,8 @@ import {
     ReportDateFilters,
     type ReportFilters,
 } from '@/components/report-date-filters';
+import TextLink from '@/components/text-link';
+import { incidentListUrl } from '@/lib/list-filters';
 import { puntosCriticos } from '@/routes/reportes';
 
 type AreaSummary = {
@@ -103,7 +105,21 @@ export default function ReportesPuntosCriticos({
                                         {row.round ?? '—'}
                                     </td>
                                     <td className="px-4 py-3">
-                                        {row.incidents}
+                                        {row.checkpoint_id &&
+                                        row.incidents > 0 ? (
+                                            <TextLink
+                                                href={incidentListUrl({
+                                                    from: filters.from,
+                                                    to: filters.to,
+                                                    checkpoint_id:
+                                                        row.checkpoint_id,
+                                                })}
+                                            >
+                                                {row.incidents}
+                                            </TextLink>
+                                        ) : (
+                                            row.incidents
+                                        )}
                                     </td>
                                     <td className="px-4 py-3">
                                         {row.urgent_visits}

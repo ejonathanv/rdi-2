@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Enums\AreaRole;
 use App\Enums\IncidentStatus;
 use App\Models\Area;
+use App\Models\Checkpoint;
 use App\Models\Incident;
 use App\Models\IncidentCategory;
+use App\Models\Round;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -140,6 +142,83 @@ class IncidentFiltersTest extends TestCase
                 ->has('incidents.data', 1)
                 ->where('incidents.data.0.id', $match->id)
                 ->where('filters.status', IncidentStatus::EnAtencion->value));
+    }
+
+    public function test_admin_can_filter_incidents_by_checkpoint_and_day(): void
+    {
+        Carbon::setTestNow('2026-03-15 12:00:00');
+
+        $area = Area::factory()->create();
+        $admin = User::factory()->create();
+        $admin->areas()->attach($area->id, ['role' => AreaRole::Admin->value]);
+        $guard = User::factory()->create();
+
+        $round = Round::factory()->create(['area_id' => $area->id]);
+        $checkpoint = Checkpoint::factory()->create(['round_id' => $round->id]);
+        $otherCheckpoint = Checkpoint::factory()->create(['round_id' => $round->id]);
+
+        $match = Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'created_at' => Carbon::parse('2026-03-10 10:00:00'),
+            'updated_at' => Carbon::parse('2026-03-10 10:00:00'),
+        ]);
+
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'checkpoint_id' => $otherCheckpoint->id,
+            'created_at' => Carbon::parse('2026-03-10 11:00:00'),
+            'updated_at' => Carbon::parse('2026-03-10 11:00:00'),
+        ]);
+
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'checkpoint_id' => $checkpoint->id,
+            'created_at' => Carbon::parse('2026-03-11 10:00:00'),
+            'updated_at' => Carbon::parse('2026-03-11 10:00:00'),
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('incidencias.index', [
+                'from' => '2026-03-10',
+                'to' => '2026-03-10',
+                'checkpoint_id' => $checkpoint->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('incidencias/index')
+                ->has('incidents.data', 1)
+                ->where('incidents.data.0.id', $match->id)
+                ->where('filters.from', '2026-03-10')
+                ->where('filters.to', '2026-03-10')
+                ->where('filters.checkpoint_id', $checkpoint->id)
+                ->where('filters.checkpoint', $checkpoint->name));
+    }
+
+    public function test_checkpoint_filter_must_belong_to_current_area(): void
+    {
+        $area = Area::factory()->create();
+        $otherArea = Area::factory()->create();
+        $admin = User::factory()->create();
+        $admin->areas()->attach($area->id, ['role' => AreaRole::Admin->value]);
+
+        $foreignRound = Round::factory()->create(['area_id' => $otherArea->id]);
+        $foreignCheckpoint = Checkpoint::factory()->create([
+            'round_id' => $foreignRound->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->from(route('incidencias.index'))
+            ->get(route('incidencias.index', [
+                'checkpoint_id' => $foreignCheckpoint->id,
+            ]))
+            ->assertRedirect(route('incidencias.index'))
+            ->assertSessionHasErrors('checkpoint_id');
     }
 
     public function test_incidents_are_paginated_twenty_per_page(): void

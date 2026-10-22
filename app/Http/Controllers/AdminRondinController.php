@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Rondin\IndexRondinesRequest;
 use App\Models\Area;
 use App\Models\BrandingSetting;
 use App\Models\PatrolCheckpointVisit;
@@ -11,6 +12,7 @@ use App\Services\PatrolReportBuilder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,14 +22,16 @@ class AdminRondinController extends Controller
 {
     public function __construct(private PatrolReportBuilder $reportBuilder) {}
 
-    public function index(Request $request): Response
+    public function index(IndexRondinesRequest $request): Response
     {
-        $this->authorize('viewAny', Round::class);
-
         $user = $request->user();
         $currentArea = $this->resolveCurrentArea($request);
 
         abort_unless($currentArea && $user->canViewAreaOperations($currentArea), 403);
+
+        $validated = $request->validated();
+        $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
+        $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
 
         $rounds = Round::query()
             ->where('area_id', $currentArea->id)
@@ -42,9 +46,18 @@ class AdminRondinController extends Controller
                 'patrol_runs_count' => $round->patrol_runs_count,
             ]);
 
+        $patrols = ($from || $to)
+            ? $this->reportBuilder->summarizeCompletedRuns($currentArea, $from, $to)
+            : [];
+
         return Inertia::render('rondines/index', [
             'area' => $currentArea->only(['id', 'name', 'code']),
             'rounds' => $rounds,
+            'patrols' => $patrols,
+            'filters' => [
+                'from' => $validated['from'] ?? null,
+                'to' => $validated['to'] ?? null,
+            ],
         ]);
     }
 

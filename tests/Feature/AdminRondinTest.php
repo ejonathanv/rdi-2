@@ -12,6 +12,7 @@ use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AdminRondinTest extends TestCase
@@ -29,7 +30,48 @@ class AdminRondinTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('rondines/index')
                 ->has('rounds', 1)
-                ->where('rounds.0.id', $round->id));
+                ->has('patrols', 0)
+                ->where('rounds.0.id', $round->id)
+                ->where('filters.from', null)
+                ->where('filters.to', null));
+    }
+
+    public function test_admin_can_filter_completed_patrols_by_date(): void
+    {
+        Carbon::setTestNow('2026-03-15 12:00:00');
+
+        [$admin, $area, $round, $guard, $patrol] = $this->adminWithCompletedPatrol();
+
+        PatrolRun::factory()->create([
+            'user_id' => $guard->id,
+            'round_id' => $round->id,
+            'status' => PatrolRunStatus::Completed,
+            'started_at' => now()->subDay()->subHour(),
+            'finished_at' => now()->subDay(),
+        ]);
+
+        PatrolRun::factory()->create([
+            'user_id' => $guard->id,
+            'round_id' => $round->id,
+            'status' => PatrolRunStatus::InProgress,
+            'started_at' => now()->subMinutes(20),
+            'finished_at' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('rondines.index', [
+                'from' => '2026-03-15',
+                'to' => '2026-03-15',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('rondines/index')
+                ->has('patrols', 1)
+                ->where('patrols.0.id', $patrol->id)
+                ->where('patrols.0.round.id', $round->id)
+                ->where('filters.from', '2026-03-15')
+                ->where('filters.to', '2026-03-15'));
     }
 
     public function test_admin_can_see_patrol_runs_for_a_round(): void

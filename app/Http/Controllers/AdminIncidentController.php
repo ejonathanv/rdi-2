@@ -6,6 +6,7 @@ use App\Enums\IncidentStatus;
 use App\Http\Requests\Incident\IndexIncidentsRequest;
 use App\Http\Requests\Incident\UpdateIncidentStatusRequest;
 use App\Models\Area;
+use App\Models\Checkpoint;
 use App\Models\Incident;
 use App\Models\IncidentCategory;
 use App\Services\IncidentStatusUpdater;
@@ -35,6 +36,7 @@ class AdminIncidentController extends Controller
         $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
         $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
         $categoryId = isset($validated['category_id']) ? (int) $validated['category_id'] : null;
+        $checkpointId = isset($validated['checkpoint_id']) ? (int) $validated['checkpoint_id'] : null;
 
         $incidents = Incident::query()
             ->where('area_id', $currentArea->id)
@@ -49,6 +51,7 @@ class AdminIncidentController extends Controller
             ->when($from, fn ($query) => $query->where('created_at', '>=', $from))
             ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
             ->when($categoryId, fn ($query) => $query->where('incident_category_id', $categoryId))
+            ->when($checkpointId, fn ($query) => $query->where('checkpoint_id', $checkpointId))
             ->latest()
             ->paginate(20)
             ->withQueryString()
@@ -73,6 +76,10 @@ class AdminIncidentController extends Controller
                 'from' => $validated['from'] ?? null,
                 'to' => $validated['to'] ?? null,
                 'category_id' => $categoryId,
+                'checkpoint_id' => $checkpointId,
+                'checkpoint' => $checkpointId
+                    ? Checkpoint::query()->whereKey($checkpointId)->value('name')
+                    : null,
             ],
             'status_options' => collect(IncidentStatus::cases())
                 ->map(fn (IncidentStatus $item) => [

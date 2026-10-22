@@ -4,12 +4,14 @@ import {
     ReportDateFilters,
     type ReportFilters,
 } from '@/components/report-date-filters';
+import TextLink from '@/components/text-link';
 import {
     Card,
     CardDescription,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { incidentListUrl } from '@/lib/list-filters';
 import { tiempos } from '@/routes/reportes';
 
 type AreaSummary = {
@@ -38,6 +40,7 @@ type Summary = {
 };
 
 type CategoryRow = {
+    category_id: number | null;
     category: string;
     with_response: number;
     avg_response_seconds: number | null;
@@ -192,8 +195,25 @@ export default function ReportesTiempos({
                                 </tr>
                             )}
                             {report.by_category.map((row) => (
-                                <tr key={row.category} className="border-t">
-                                    <td className="px-4 py-3">{row.category}</td>
+                                <tr
+                                    key={row.category_id ?? row.category}
+                                    className="border-t"
+                                >
+                                    <td className="px-4 py-3">
+                                        {row.category_id ? (
+                                            <TextLink
+                                                href={incidentListUrl({
+                                                    from: filters.from,
+                                                    to: filters.to,
+                                                    category_id: row.category_id,
+                                                })}
+                                            >
+                                                {row.category}
+                                            </TextLink>
+                                        ) : (
+                                            row.category
+                                        )}
+                                    </td>
                                     <td className="px-4 py-3">
                                         {row.with_response}
                                     </td>

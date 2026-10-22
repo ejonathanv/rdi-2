@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { DayBars, type DayCount } from '@/components/day-bars';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    completedPatrolsUrl,
+    incidentListUrl,
+} from '@/lib/list-filters';
 import { dashboard } from '@/routes';
 import { show as showIncident, index as incidenciasIndex } from '@/routes/incidencias';
 import { show as showPatrol } from '@/routes/rondines/patrols';
@@ -63,57 +68,11 @@ type ActivePatrolRow = {
     guard: string;
 };
 
-type DayCount = {
-    date: string;
-    label: string;
-    count: number;
-};
-
 function formatDateTime(value: string): string {
     return new Date(value).toLocaleString('es-MX', {
         dateStyle: 'short',
         timeStyle: 'short',
     });
-}
-
-function DayBars({
-    days,
-    emptyLabel,
-}: {
-    days: DayCount[];
-    emptyLabel: string;
-}) {
-    const maxCount = Math.max(1, ...days.map((day) => day.count));
-
-    return (
-        <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => (
-                <div
-                    key={day.date}
-                    className="flex flex-col items-center gap-2"
-                >
-                    <div className="flex h-28 w-full items-end justify-center rounded-lg bg-muted/40 px-1 py-2">
-                        <div
-                            className="w-full max-w-8 rounded-t bg-primary"
-                            style={{
-                                height: `${Math.max(
-                                    day.count === 0 ? 0 : 12,
-                                    (day.count / maxCount) * 100,
-                                )}%`,
-                            }}
-                            title={`${day.count} ${emptyLabel}`}
-                        />
-                    </div>
-                    <div className="text-center">
-                        <div className="text-xs text-muted-foreground">
-                            {day.label}
-                        </div>
-                        <div className="text-sm font-medium">{day.count}</div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
 }
 
 export default function Dashboard({
@@ -443,13 +402,19 @@ export default function Dashboard({
                                 Incidencias (últimos 7 días)
                             </CardTitle>
                             <CardDescription>
-                                Volumen diario de reportes
+                                Clic en un día para ver esas incidencias
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <DayBars
                                 days={incidents_last_7_days}
-                                emptyLabel="incidencias"
+                                countNoun="incidencias"
+                                hrefForDay={(day) =>
+                                    incidentListUrl({
+                                        from: day.date,
+                                        to: day.date,
+                                    })
+                                }
                             />
                         </CardContent>
                     </Card>
@@ -459,13 +424,16 @@ export default function Dashboard({
                     <CardHeader>
                         <CardTitle>Finalizados (últimos 7 días)</CardTitle>
                         <CardDescription>
-                            Volumen diario de rondines completados
+                            Clic en un día para ver esos rondines
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <DayBars
                             days={completed_last_7_days}
-                            emptyLabel="finalizados"
+                            countNoun="rondines finalizados"
+                            hrefForDay={(day) =>
+                                completedPatrolsUrl(day.date)
+                            }
                         />
                     </CardContent>
                 </Card>

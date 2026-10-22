@@ -58,6 +58,9 @@ class OperationalReportsTest extends TestCase
                 ->where('report.totals.urgent', 1)
                 ->where('report.totals.open', 1)
                 ->where('report.by_category.0.category', 'ROBO')
+                ->where('report.by_category.0.category_id', $category->id)
+                ->where('report.series.9.date', '2026-03-10')
+                ->where('report.series.9.count', 1)
                 ->where('filters.from', '2026-03-01')
                 ->where('filters.to', '2026-03-31'));
     }
