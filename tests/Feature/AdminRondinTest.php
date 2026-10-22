@@ -74,6 +74,77 @@ class AdminRondinTest extends TestCase
                 ->where('filters.to', '2026-03-15'));
     }
 
+    public function test_admin_can_filter_in_progress_patrols(): void
+    {
+        [$admin, $area, $round, $guard] = $this->adminWithCompletedPatrol();
+
+        $active = PatrolRun::factory()->create([
+            'user_id' => $guard->id,
+            'round_id' => $round->id,
+            'status' => PatrolRunStatus::InProgress,
+            'started_at' => now()->subMinutes(20),
+            'finished_at' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('rondines.index', [
+                'status' => PatrolRunStatus::InProgress->value,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('rondines/index')
+                ->has('patrols', 1)
+                ->where('patrols.0.id', $active->id)
+                ->where('filters.status', PatrolRunStatus::InProgress->value));
+    }
+
+    public function test_admin_can_filter_urgent_visits_by_day(): void
+    {
+        Carbon::setTestNow('2026-03-15 12:00:00');
+
+        [$admin, $area, $round, $guard, $patrol] = $this->adminWithCompletedPatrol();
+
+        $checkpoint = Checkpoint::query()->where('round_id', $round->id)->firstOrFail();
+        $otherCheckpoint = Checkpoint::factory()->create([
+            'round_id' => $round->id,
+            'is_active' => true,
+            'position' => 2,
+        ]);
+
+        $urgentVisit = PatrolCheckpointVisit::query()
+            ->where('patrol_run_id', $patrol->id)
+            ->firstOrFail();
+        $urgentVisit->forceFill([
+            'is_urgent' => true,
+            'urgent_notes' => 'Puerta abierta',
+            'reviewed_at' => now()->subHour(),
+        ])->save();
+
+        PatrolCheckpointVisit::factory()->create([
+            'patrol_run_id' => $patrol->id,
+            'checkpoint_id' => $otherCheckpoint->id,
+            'is_urgent' => true,
+            'reviewed_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('rondines.index', [
+                'urgent' => 1,
+                'from' => '2026-03-15',
+                'to' => '2026-03-15',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('rondines/index')
+                ->has('urgent_visits', 1)
+                ->has('patrols', 0)
+                ->where('urgent_visits.0.id', $urgentVisit->id)
+                ->where('urgent_visits.0.checkpoint', $checkpoint->name)
+                ->where('filters.urgent', true));
+    }
+
     public function test_admin_can_see_patrol_runs_for_a_round(): void
     {
         [$admin, $area, $round, $guard, $patrol] = $this->adminWithCompletedPatrol();

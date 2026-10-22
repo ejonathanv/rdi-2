@@ -37,6 +37,8 @@ type Filters = {
     category_id: number | null;
     checkpoint_id: number | null;
     checkpoint: string | null;
+    is_urgent: boolean | null;
+    open: boolean | null;
 };
 
 type IncidentRow = {
@@ -103,6 +105,14 @@ function buildQuery(filters: Filters): Record<string, string> {
         query.checkpoint_id = String(filters.checkpoint_id);
     }
 
+    if (filters.is_urgent) {
+        query.is_urgent = '1';
+    }
+
+    if (filters.open) {
+        query.open = '1';
+    }
+
     return query;
 }
 
@@ -136,6 +146,7 @@ export default function IncidenciasIndex({
             category_id: null,
             checkpoint_id: null,
             checkpoint: null,
+            is_urgent: null,
         });
     };
 
@@ -143,7 +154,8 @@ export default function IncidenciasIndex({
         filters.from ||
             filters.to ||
             filters.category_id ||
-            filters.checkpoint_id,
+            filters.checkpoint_id ||
+            filters.is_urgent,
     );
 
     return (
@@ -160,10 +172,26 @@ export default function IncidenciasIndex({
                     <Button
                         type="button"
                         size="sm"
-                        variant={filters.status ? 'outline' : 'default'}
-                        onClick={() => applyFilters({ status: null })}
+                        variant={
+                            filters.status || filters.open
+                                ? 'outline'
+                                : 'default'
+                        }
+                        onClick={() =>
+                            applyFilters({ status: null, open: null })
+                        }
                     >
                         Todas
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={filters.open ? 'default' : 'outline'}
+                        onClick={() =>
+                            applyFilters({ status: null, open: true })
+                        }
+                    >
+                        Abiertas
                     </Button>
                     {status_options.map((option) => (
                         <Button
@@ -176,12 +204,27 @@ export default function IncidenciasIndex({
                                     : 'outline'
                             }
                             onClick={() =>
-                                applyFilters({ status: option.value })
+                                applyFilters({
+                                    status: option.value,
+                                    open: null,
+                                })
                             }
                         >
                             {option.label}
                         </Button>
                     ))}
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={filters.is_urgent ? 'default' : 'outline'}
+                        onClick={() =>
+                            applyFilters({
+                                is_urgent: filters.is_urgent ? null : true,
+                            })
+                        }
+                    >
+                        Urgentes
+                    </Button>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">

@@ -33,9 +33,21 @@ type PatrolRow = {
     round: { id: number; title: string };
 };
 
+type UrgentVisitRow = {
+    id: number;
+    reviewed_at: string | null;
+    urgent_notes: string | null;
+    checkpoint: string;
+    round: { id: number; title: string };
+    guard: string;
+    patrol_id: number;
+};
+
 type Filters = {
     from: string | null;
     to: string | null;
+    status: string | null;
+    urgent: boolean | null;
 };
 
 function formatDateTime(value: string | null): string {
@@ -61,18 +73,42 @@ function periodLabel(filters: Filters): string {
     return filters.from ?? filters.to ?? '';
 }
 
+function patrolsHeading(filters: Filters): { title: string; description: string } {
+    if (filters.status === 'in_progress') {
+        return {
+            title: 'En curso',
+            description: 'Rondines activos ahora',
+        };
+    }
+
+    const period = periodLabel(filters);
+
+    return {
+        title: 'Finalizados',
+        description: period
+            ? `Rondines completados el ${period}`
+            : 'Rondines completados',
+    };
+}
+
 export default function RondinesIndex({
     area,
     rounds: roundRows,
     patrols = [],
-    filters = { from: null, to: null },
+    urgent_visits: urgentVisits = [],
+    filters = { from: null, to: null, status: null, urgent: null },
 }: {
     area: AreaSummary;
     rounds: RoundRow[];
     patrols?: PatrolRow[];
+    urgent_visits?: UrgentVisitRow[];
     filters?: Filters;
 }) {
-    const hasDateFilter = Boolean(filters.from || filters.to);
+    const hasUrgentFilter = Boolean(filters.urgent);
+    const hasPatrolFilter =
+        !hasUrgentFilter &&
+        Boolean(filters.from || filters.to || filters.status);
+    const heading = patrolsHeading(filters);
 
     return (
         <>
@@ -84,17 +120,113 @@ export default function RondinesIndex({
                     description={`Recorridos realizados en ${area.name} (${area.code})`}
                 />
 
-                {hasDateFilter && (
+                {hasUrgentFilter && (
                     <div className="flex flex-col gap-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <Heading
                                 variant="small"
-                                title="Finalizados"
-                                description={`Rondines completados el ${periodLabel(filters)}`}
+                                title="Urgentes"
+                                description={
+                                    periodLabel(filters)
+                                        ? `Puntos urgentes del ${periodLabel(filters)}`
+                                        : 'Puntos marcados como urgentes'
+                                }
                             />
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href={rondinesIndex.url()}>
-                                    Quitar filtro de fecha
+                                    Quitar filtro
+                                </Link>
+                            </Button>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-xl border">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/50 text-left">
+                                    <tr>
+                                        <th className="px-4 py-3 font-medium">
+                                            Punto
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            Recorrido
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            Guardia
+                                        </th>
+                                        <th className="px-4 py-3 font-medium">
+                                            Hora
+                                        </th>
+                                        <th className="px-4 py-3 font-medium text-right">
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {urgentVisits.length === 0 && (
+                                        <tr>
+                                            <td
+                                                colSpan={5}
+                                                className="px-4 py-8 text-center text-muted-foreground"
+                                            >
+                                                No hay puntos urgentes en esa
+                                                fecha.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {urgentVisits.map((visit) => (
+                                        <tr
+                                            key={visit.id}
+                                            className="border-t"
+                                        >
+                                            <td className="px-4 py-3 font-medium">
+                                                {visit.checkpoint}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {visit.round.title}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {visit.guard}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {formatDateTime(
+                                                    visit.reviewed_at,
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                >
+                                                    <Link
+                                                        href={showPatrol.url({
+                                                            round: visit.round
+                                                                .id,
+                                                            patrol: visit.patrol_id,
+                                                        })}
+                                                    >
+                                                        Ver detalle
+                                                    </Link>
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {hasPatrolFilter && (
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Heading
+                                variant="small"
+                                title={heading.title}
+                                description={heading.description}
+                            />
+                            <Button variant="ghost" size="sm" asChild>
+                                <Link href={rondinesIndex.url()}>
+                                    Quitar filtro
                                 </Link>
                             </Button>
                         </div>
@@ -130,8 +262,10 @@ export default function RondinesIndex({
                                                 colSpan={6}
                                                 className="px-4 py-8 text-center text-muted-foreground"
                                             >
-                                                No hay rondines finalizados en
-                                                esa fecha.
+                                                {filters.status ===
+                                                'in_progress'
+                                                    ? 'No hay rondines en curso.'
+                                                    : 'No hay rondines finalizados en esa fecha.'}
                                             </td>
                                         </tr>
                                     )}

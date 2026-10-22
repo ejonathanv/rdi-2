@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PatrolRunStatus;
 use App\Models\Area;
+use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
 use Carbon\CarbonInterface;
@@ -147,19 +148,76 @@ class PatrolReportBuilder
      *     round: array{id: int, title: string}
      * }>
      */
-    public function summarizeCompletedRuns(Area $area, ?CarbonInterface $from, ?CarbonInterface $to): array
+    public function summarizeAreaRuns(
+        Area $area,
+        PatrolRunStatus $status = PatrolRunStatus::Completed,
+        ?CarbonInterface $from = null,
+        ?CarbonInterface $to = null,
+    ): array {
+        $roundIds = $area->rounds()->pluck('id');
+
+        $query = PatrolRun::query()
+            ->whereIn('round_id', $roundIds)
+            ->where('status', $status)
+            ->with(['user:id,name', 'round:id,title']);
+
+        if ($status === PatrolRunStatus::Completed) {
+            $query->when($from, fn ($builder) => $builder->where('finished_at', '>=', $from))
+                ->when($to, fn ($builder) => $builder->where('finished_at', '<=', $to))
+                ->latest('finished_at');
+        } else {
+            $query->when($from, fn ($builder) => $builder->where('started_at', '>=', $from))
+                ->when($to, fn ($builder) => $builder->where('started_at', '<=', $to))
+                ->latest('started_at');
+        }
+
+        return $query
+            ->get()
+            ->map(fn (PatrolRun $patrol) => $this->summarizePatrol($patrol, withRound: true))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array{
+     *     id: int,
+     *     reviewed_at: string|null,
+     *     urgent_notes: string|null,
+     *     checkpoint: string,
+     *     round: array{id: int, title: string},
+     *     guard: string,
+     *     patrol_id: int
+     * }>
+     */
+    public function summarizeUrgentVisits(Area $area, ?CarbonInterface $from, ?CarbonInterface $to): array
     {
         $roundIds = $area->rounds()->pluck('id');
 
-        return PatrolRun::query()
-            ->whereIn('round_id', $roundIds)
-            ->where('status', PatrolRunStatus::Completed)
-            ->when($from, fn ($query) => $query->where('finished_at', '>=', $from))
-            ->when($to, fn ($query) => $query->where('finished_at', '<=', $to))
-            ->with(['user:id,name', 'round:id,title'])
-            ->latest('finished_at')
+        return PatrolCheckpointVisit::query()
+            ->where('is_urgent', true)
+            ->whereHas('patrolRun', fn ($query) => $query->whereIn('round_id', $roundIds))
+            ->when($from, fn ($query) => $query->where('reviewed_at', '>=', $from))
+            ->when($to, fn ($query) => $query->where('reviewed_at', '<=', $to))
+            ->with([
+                'checkpoint:id,name',
+                'patrolRun:id,user_id,round_id',
+                'patrolRun.user:id,name',
+                'patrolRun.round:id,title',
+            ])
+            ->latest('reviewed_at')
             ->get()
-            ->map(fn (PatrolRun $patrol) => $this->summarizePatrol($patrol, withRound: true))
+            ->map(fn (PatrolCheckpointVisit $visit) => [
+                'id' => $visit->id,
+                'reviewed_at' => $visit->reviewed_at?->toIso8601String(),
+                'urgent_notes' => $visit->urgent_notes,
+                'checkpoint' => $visit->checkpoint->name,
+                'round' => [
+                    'id' => $visit->patrolRun->round->id,
+                    'title' => $visit->patrolRun->round->title,
+                ],
+                'guard' => $visit->patrolRun->user->name,
+                'patrol_id' => $visit->patrolRun->id,
+            ])
             ->values()
             ->all();
     }
@@ -179,7 +237,10 @@ class PatrolReportBuilder
      */
     private function summarizePatrol(PatrolRun $patrol, bool $withRound = false): array
     {
-        $durationSeconds = $patrol->durationInSeconds();
+        $durationSeconds = $patrol->durationInSeconds()
+            ?? ($patrol->status === PatrolRunStatus::InProgress
+                ? (int) $patrol->started_at->diffInSeconds(now())
+                : null);
 
         $summary = [
             'id' => $patrol->id,

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminIncidentController;
+use App\Http\Controllers\AdminPanicController;
 use App\Http\Controllers\AdminRondinController;
 use App\Http\Controllers\AreaController;
 use App\Http\Controllers\BrandingController;
@@ -94,6 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('rondines/{round}/patrullas/{patrol}/visitas/{visit}/urgente-atendido', [AdminRondinController::class, 'resolveUrgentVisit'])
             ->name('rondines.visits.resolve-urgent');
 
+        Route::get('panicos', [AdminPanicController::class, 'index'])->name('panicos.index');
         Route::get('incidencias', [AdminIncidentController::class, 'index'])->name('incidencias.index');
         Route::get('incidencias/{incident}', [AdminIncidentController::class, 'show'])->name('incidencias.show');
         Route::patch('incidencias/{incident}/estado', [AdminIncidentController::class, 'updateStatus'])

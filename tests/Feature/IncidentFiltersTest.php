@@ -221,6 +221,59 @@ class IncidentFiltersTest extends TestCase
             ->assertSessionHasErrors('checkpoint_id');
     }
 
+    public function test_admin_can_filter_open_and_urgent_incidents(): void
+    {
+        Carbon::setTestNow('2026-03-15 12:00:00');
+
+        $area = Area::factory()->create();
+        $admin = User::factory()->create();
+        $admin->areas()->attach($area->id, ['role' => AreaRole::Admin->value]);
+        $guard = User::factory()->create();
+
+        $openUrgent = Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'status' => IncidentStatus::Nueva,
+            'is_urgent' => true,
+            'created_at' => Carbon::parse('2026-03-15 10:00:00'),
+            'updated_at' => Carbon::parse('2026-03-15 10:00:00'),
+        ]);
+
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'status' => IncidentStatus::Resuelta,
+            'is_urgent' => true,
+            'created_at' => Carbon::parse('2026-03-15 09:00:00'),
+            'updated_at' => Carbon::parse('2026-03-15 09:00:00'),
+        ]);
+
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'status' => IncidentStatus::EnAtencion,
+            'is_urgent' => false,
+            'created_at' => Carbon::parse('2026-03-15 08:00:00'),
+            'updated_at' => Carbon::parse('2026-03-15 08:00:00'),
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('incidencias.index', [
+                'open' => 1,
+                'is_urgent' => 1,
+                'from' => '2026-03-15',
+                'to' => '2026-03-15',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('incidencias/index')
+                ->has('incidents.data', 1)
+                ->where('incidents.data.0.id', $openUrgent->id)
+                ->where('filters.open', true)
+                ->where('filters.is_urgent', true));
+    }
+
     public function test_incidents_are_paginated_twenty_per_page(): void
     {
         $area = Area::factory()->create();

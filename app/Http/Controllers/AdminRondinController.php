@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PatrolRunStatus;
 use App\Http\Requests\Rondin\IndexRondinesRequest;
 use App\Models\Area;
 use App\Models\BrandingSetting;
@@ -32,6 +33,8 @@ class AdminRondinController extends Controller
         $validated = $request->validated();
         $from = isset($validated['from']) ? Carbon::parse($validated['from'])->startOfDay() : null;
         $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
+        $status = PatrolRunStatus::tryFrom($validated['status'] ?? '');
+        $urgent = $request->boolean('urgent');
 
         $rounds = Round::query()
             ->where('area_id', $currentArea->id)
@@ -46,17 +49,29 @@ class AdminRondinController extends Controller
                 'patrol_runs_count' => $round->patrol_runs_count,
             ]);
 
-        $patrols = ($from || $to)
-            ? $this->reportBuilder->summarizeCompletedRuns($currentArea, $from, $to)
+        $urgentVisits = $urgent
+            ? $this->reportBuilder->summarizeUrgentVisits($currentArea, $from, $to)
+            : [];
+
+        $patrols = (! $urgent && ($from || $to || $status))
+            ? $this->reportBuilder->summarizeAreaRuns(
+                $currentArea,
+                $status ?? PatrolRunStatus::Completed,
+                $from,
+                $to,
+            )
             : [];
 
         return Inertia::render('rondines/index', [
             'area' => $currentArea->only(['id', 'name', 'code']),
             'rounds' => $rounds,
             'patrols' => $patrols,
+            'urgent_visits' => $urgentVisits,
             'filters' => [
                 'from' => $validated['from'] ?? null,
                 'to' => $validated['to'] ?? null,
+                'status' => $status?->value,
+                'urgent' => $urgent ?: null,
             ],
         ]);
     }

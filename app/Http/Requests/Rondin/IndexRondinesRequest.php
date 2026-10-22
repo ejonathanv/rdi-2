@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Rondin;
 
+use App\Enums\PatrolRunStatus;
 use App\Models\Round;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IndexRondinesRequest extends FormRequest
 {
@@ -21,6 +23,8 @@ class IndexRondinesRequest extends FormRequest
         return [
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'status' => ['nullable', 'string', Rule::enum(PatrolRunStatus::class)],
+            'urgent' => ['nullable', 'boolean'],
         ];
     }
 
@@ -32,6 +36,8 @@ class IndexRondinesRequest extends FormRequest
         return [
             'from' => 'fecha desde',
             'to' => 'fecha hasta',
+            'status' => 'estado',
+            'urgent' => 'urgente',
         ];
     }
 }

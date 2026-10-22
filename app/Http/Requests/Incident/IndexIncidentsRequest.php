@@ -27,6 +27,8 @@ class IndexIncidentsRequest extends FormRequest
             'status' => ['nullable', 'string', Rule::enum(IncidentStatus::class)],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'is_urgent' => ['nullable', 'boolean'],
+            'open' => ['nullable', 'boolean'],
             'category_id' => [
                 'nullable',
                 'integer',
@@ -59,6 +61,8 @@ class IndexIncidentsRequest extends FormRequest
             'category_id' => 'categoría',
             'checkpoint_id' => 'punto',
             'status' => 'estado',
+            'is_urgent' => 'urgente',
+            'open' => 'abiertas',
         ];
     }
 }

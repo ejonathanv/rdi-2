@@ -13,7 +13,10 @@ import {
 import {
     completedPatrolsUrl,
     incidentListUrl,
+    panicListUrl,
+    patrolsUrl,
 } from '@/lib/list-filters';
+import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { show as showIncident, index as incidenciasIndex } from '@/routes/incidencias';
 import { show as showPatrol } from '@/routes/rondines/patrols';
@@ -75,6 +78,54 @@ function formatDateTime(value: string): string {
     });
 }
 
+function KpiCard({
+    href,
+    label,
+    value,
+    destructive = false,
+}: {
+    href?: string;
+    label: string;
+    value: string | number;
+    destructive?: boolean;
+}) {
+    const card = (
+        <Card
+            className={cn(
+                'gap-3 py-4',
+                href && 'h-full transition-colors hover:bg-muted/60',
+            )}
+        >
+            <CardHeader className="px-4">
+                <CardDescription>{label}</CardDescription>
+                <CardTitle
+                    className={cn(
+                        'text-3xl',
+                        destructive && 'text-destructive',
+                    )}
+                >
+                    {value}
+                </CardTitle>
+            </CardHeader>
+        </Card>
+    );
+
+    if (!href) {
+        return card;
+    }
+
+    return (
+        <Link
+            href={href}
+            prefetch
+            aria-label={`Ver ${label}`}
+            className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+            {card}
+        </Link>
+    );
+}
+
 export default function Dashboard({
     area,
     kpis,
@@ -92,6 +143,9 @@ export default function Dashboard({
     completed_last_7_days: DayCount[];
     incidents_last_7_days: DayCount[];
 }) {
+    const today = incidents_last_7_days.at(-1)?.date;
+    const weekFrom = incidents_last_7_days.at(0)?.date;
+
     return (
         <>
             <Head title="Escritorio" />
@@ -119,100 +173,129 @@ export default function Dashboard({
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>Urgentes hoy</CardDescription>
-                            <CardTitle className="text-3xl text-destructive">
-                                {kpis.urgents_today}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>En curso</CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.in_progress}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>Finalizados hoy</CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.completed_today}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>
-                                Tiempo promedio (7 días)
-                            </CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.average_duration_label ?? '—'}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
+                    <KpiCard
+                        label="Urgentes hoy"
+                        value={kpis.urgents_today}
+                        destructive
+                        href={
+                            area && today
+                                ? patrolsUrl({
+                                      from: today,
+                                      to: today,
+                                      urgent: true,
+                                  })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="En curso"
+                        value={kpis.in_progress}
+                        href={
+                            area
+                                ? patrolsUrl({ status: 'in_progress' })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Finalizados hoy"
+                        value={kpis.completed_today}
+                        href={
+                            area && today
+                                ? completedPatrolsUrl(today)
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Tiempo promedio (7 días)"
+                        value={kpis.average_duration_label ?? '—'}
+                        href={
+                            area && today && weekFrom
+                                ? patrolsUrl({
+                                      from: weekFrom,
+                                      to: today,
+                                  })
+                                : undefined
+                        }
+                    />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>Incidencias hoy</CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.incidents_today}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>
-                                Incidencias urgentes hoy
-                            </CardDescription>
-                            <CardTitle className="text-3xl text-destructive">
-                                {kpis.urgent_incidents_today}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>Pánicos hoy</CardDescription>
-                            <CardTitle className="text-3xl text-destructive">
-                                {kpis.panics_today}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>Incidencias abiertas</CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.open_incidents}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
+                    <KpiCard
+                        label="Incidencias hoy"
+                        value={kpis.incidents_today}
+                        href={
+                            area && today
+                                ? incidentListUrl({
+                                      from: today,
+                                      to: today,
+                                  })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Incidencias urgentes hoy"
+                        value={kpis.urgent_incidents_today}
+                        destructive
+                        href={
+                            area && today
+                                ? incidentListUrl({
+                                      from: today,
+                                      to: today,
+                                      is_urgent: true,
+                                  })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Pánicos hoy"
+                        value={kpis.panics_today}
+                        destructive
+                        href={
+                            area && today
+                                ? panicListUrl({
+                                      from: today,
+                                      to: today,
+                                  })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Incidencias abiertas"
+                        value={kpis.open_incidents}
+                        href={
+                            area
+                                ? incidentListUrl({ open: true })
+                                : undefined
+                        }
+                    />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>
-                                Tiempo respuesta incidencias (7 días)
-                            </CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.avg_response_label ?? '—'}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
-                    <Card className="gap-3 py-4">
-                        <CardHeader className="px-4">
-                            <CardDescription>
-                                Tiempo cierre incidencias (7 días)
-                            </CardDescription>
-                            <CardTitle className="text-3xl">
-                                {kpis.avg_resolution_label ?? '—'}
-                            </CardTitle>
-                        </CardHeader>
-                    </Card>
+                    <KpiCard
+                        label="Tiempo respuesta incidencias (7 días)"
+                        value={kpis.avg_response_label ?? '—'}
+                        href={
+                            area && today && weekFrom
+                                ? incidentListUrl({
+                                      from: weekFrom,
+                                      to: today,
+                                  })
+                                : undefined
+                        }
+                    />
+                    <KpiCard
+                        label="Tiempo cierre incidencias (7 días)"
+                        value={kpis.avg_resolution_label ?? '—'}
+                        href={
+                            area && today && weekFrom
+                                ? incidentListUrl({
+                                      from: weekFrom,
+                                      to: today,
+                                      status: 'resuelta',
+                                  })
+                                : undefined
+                        }
+                    />
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">

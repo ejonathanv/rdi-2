@@ -37,6 +37,8 @@ class AdminIncidentController extends Controller
         $to = isset($validated['to']) ? Carbon::parse($validated['to'])->endOfDay() : null;
         $categoryId = isset($validated['category_id']) ? (int) $validated['category_id'] : null;
         $checkpointId = isset($validated['checkpoint_id']) ? (int) $validated['checkpoint_id'] : null;
+        $isUrgent = $request->has('is_urgent') ? $request->boolean('is_urgent') : null;
+        $open = $request->boolean('open');
 
         $incidents = Incident::query()
             ->where('area_id', $currentArea->id)
@@ -48,10 +50,16 @@ class AdminIncidentController extends Controller
                 'patrolRun.round:id,title',
             ])
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($open && $status === null, fn ($query) => $query->whereIn('status', [
+                IncidentStatus::Nueva,
+                IncidentStatus::EnAtencion,
+            ]))
             ->when($from, fn ($query) => $query->where('created_at', '>=', $from))
             ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
             ->when($categoryId, fn ($query) => $query->where('incident_category_id', $categoryId))
             ->when($checkpointId, fn ($query) => $query->where('checkpoint_id', $checkpointId))
+            ->when($isUrgent === true, fn ($query) => $query->where('is_urgent', true))
+            ->when($isUrgent === false, fn ($query) => $query->where('is_urgent', false))
             ->latest()
             ->paginate(20)
             ->withQueryString()
@@ -80,6 +88,8 @@ class AdminIncidentController extends Controller
                 'checkpoint' => $checkpointId
                     ? Checkpoint::query()->whereKey($checkpointId)->value('name')
                     : null,
+                'is_urgent' => $isUrgent,
+                'open' => $open ?: null,
             ],
             'status_options' => collect(IncidentStatus::cases())
                 ->map(fn (IncidentStatus $item) => [
