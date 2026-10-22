@@ -7,7 +7,7 @@ Hay elementos urgentes sin atender en el área **{{ $digest['area']['name'] }}**
 ## Incidencias urgentes abiertas ({{ count($digest['incidents']) }})
 
 @foreach ($digest['incidents'] as $incident)
-- **#{{ $incident['id'] }}** · {{ $incident['created_at'] }} · {{ $incident['status'] }}@if($incident['category']) · {{ $incident['category'] }}@endif  
+- **#{{ $incident['id'] }}** · {{ $incident['created_at'] }} · {{ $incident['status'] }}{{ $incident['category'] ? ' · '.$incident['category'] : '' }}  
   {{ $incident['message'] }}  
   Guardia: {{ $incident['guard'] }}
 @endforeach
@@ -18,8 +18,7 @@ Hay elementos urgentes sin atender en el área **{{ $digest['area']['name'] }}**
 
 @foreach ($digest['visits'] as $visit)
 - **{{ $visit['checkpoint'] }}** ({{ $visit['round'] }}) · {{ $visit['reviewed_at'] }}  
-  Guardia: {{ $visit['guard'] }}@if($visit['notes'])  
-  Notas: {{ $visit['notes'] }}@endif
+  Guardia: {{ $visit['guard'] }}{{ $visit['notes'] ? "\n  Notas: ".$visit['notes'] : '' }}
 @endforeach
 @endif
 

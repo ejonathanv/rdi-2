@@ -5,7 +5,7 @@
 
 @foreach ($digest['patrols'] as $patrol)
 - **{{ $patrol['round'] }}** · {{ $patrol['guard'] }} · {{ $patrol['status'] }}  
-  Inicio: {{ $patrol['started_at'] }}@if($patrol['finished_at']) · Fin: {{ $patrol['finished_at'] }}@endif  
+  Inicio: {{ $patrol['started_at'] }}{{ $patrol['finished_at'] ? ' · Fin: '.$patrol['finished_at'] : '' }}  
   Duración: {{ $patrol['duration_label'] ?? '—' }} · Puntos visitados: {{ $patrol['visits_count'] }}
 @endforeach
 

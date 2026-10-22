@@ -11,10 +11,12 @@ use App\Mail\WeeklyIncidentsDigestMail;
 use App\Models\Area;
 use App\Models\Checkpoint;
 use App\Models\Incident;
+use App\Models\IncidentCategory;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
 use App\Models\Round;
 use App\Models\User;
+use App\Services\DigestReports;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -78,6 +80,32 @@ class DigestMailsTest extends TestCase
             return $mail->hasTo($contact->email)
                 && $mail->digest['totals']['total'] === 1;
         });
+    }
+
+    public function test_weekly_incidents_digest_html_does_not_leak_blade_directives(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-03-13 13:00:00', 'America/Mexico_City')->utc());
+
+        [$area, , , $guard] = $this->areaWithPeople();
+        $category = IncidentCategory::factory()->create(['area_id' => $area->id, 'name' => 'NOTA INFORMATIVA']);
+
+        Incident::factory()->create([
+            'area_id' => $area->id,
+            'user_id' => $guard->id,
+            'is_urgent' => true,
+            'incident_category_id' => $category->id,
+            'message_raw' => 'Se observó acceso sin registro.',
+            'created_at' => Carbon::parse('2026-03-11 10:00:00', 'America/Mexico_City')->utc(),
+            'updated_at' => Carbon::parse('2026-03-11 10:00:00', 'America/Mexico_City')->utc(),
+        ]);
+
+        $html = (new WeeklyIncidentsDigestMail(app(DigestReports::class)->weeklyIncidents($area)))->render();
+
+        $this->assertStringNotContainsString('@endif', $html);
+        $this->assertStringNotContainsString('@if', $html);
+        $this->assertStringContainsString('Urgente', $html);
+        $this->assertStringContainsString('NOTA INFORMATIVA', $html);
+        $this->assertStringContainsString('Se observó acceso sin registro.', $html);
     }
 
     public function test_daily_patrols_digest_is_queued_when_there_are_patrols(): void

@@ -18,7 +18,7 @@ No se registraron incidencias en esta semana.
 ## Detalle
 
 @foreach ($digest['incidents'] as $incident)
-- **#{{ $incident['id'] }}** · {{ $incident['created_at'] }} · {{ $incident['status'] }}@if($incident['is_urgent']) · Urgente@endif@if($incident['category']) · {{ $incident['category'] }}@endif  
+- **#{{ $incident['id'] }}** · {{ $incident['created_at'] }} · {{ $incident['status'] }}{{ $incident['is_urgent'] ? ' · Urgente' : '' }}{{ $incident['category'] ? ' · '.$incident['category'] : '' }}  
   {{ $incident['message'] }}  
   Guardia: {{ $incident['guard'] }}
 @endforeach
