@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AreaRole;
+use App\Http\Requests\IncidentCategory\ImportDefaultIncidentCategoriesRequest;
 use App\Http\Requests\IncidentCategory\StoreIncidentCategoryRequest;
 use App\Http\Requests\IncidentCategory\UpdateIncidentCategoryRequest;
 use App\Models\Area;
 use App\Models\IncidentCategory;
 use App\Models\User;
+use App\Support\DefaultIncidentCategoryCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +35,7 @@ class IncidentCategoryController extends Controller
         return Inertia::render('incident-categories/index', [
             'area' => $currentArea->only(['id', 'name', 'code']),
             'categories' => $categories,
+            'defaultCategories' => DefaultIncidentCategoryCatalog::summaries(),
         ]);
     }
 
@@ -100,6 +103,20 @@ class IncidentCategoryController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Categoría actualizada.')]);
 
         return to_route('incident-categories.edit', $incidentCategory);
+    }
+
+    public function importDefaults(ImportDefaultIncidentCategoriesRequest $request): RedirectResponse
+    {
+        $created = DefaultIncidentCategoryCatalog::importFor($request->area());
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $created > 0
+                ? __('Se importaron :count categorías por defecto.', ['count' => $created])
+                : __('Las categorías por defecto ya estaban en esta área.'),
+        ]);
+
+        return to_route('incident-categories.index');
     }
 
     public function destroy(IncidentCategory $incidentCategory): RedirectResponse

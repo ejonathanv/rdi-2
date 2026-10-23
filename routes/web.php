@@ -120,6 +120,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('areas', AreaController::class)->except(['show']);
         Route::resource('users', UserController::class)->except(['show']);
         Route::resource('rounds', RoundController::class)->except(['show']);
+        Route::post('incident-categories/import-defaults', [IncidentCategoryController::class, 'importDefaults'])
+            ->name('incident-categories.import-defaults');
         Route::resource('incident-categories', IncidentCategoryController::class)
             ->except(['show']);
 

@@ -1,15 +1,29 @@
 import { Form, Head, Link } from '@inertiajs/react';
+import { ChevronDown } from 'lucide-react';
 import AreaController from '@/actions/App/Http/Controllers/AreaController';
+import {
+    DefaultCategoriesSummary,
+    type DefaultCategorySummary,
+} from '@/components/default-categories-summary';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { index as areasIndex, create as areasCreate } from '@/routes/areas';
 
-export default function AreasCreate() {
+export default function AreasCreate({
+    defaultCategories,
+}: {
+    defaultCategories: DefaultCategorySummary[];
+}) {
     return (
         <>
             <Head title="Nueva área" />
@@ -72,6 +86,52 @@ export default function AreasCreate() {
                                 />
                                 <Label htmlFor="is_active">Activa</Label>
                             </div>
+
+                            <Collapsible className="space-y-3 rounded-xl border p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-start gap-3">
+                                        <input
+                                            type="hidden"
+                                            name="import_default_categories"
+                                            value="0"
+                                        />
+                                        <Checkbox
+                                            id="import_default_categories"
+                                            name="import_default_categories"
+                                            value="1"
+                                            defaultChecked
+                                            className="mt-0.5"
+                                        />
+                                        <div className="grid gap-1">
+                                            <Label htmlFor="import_default_categories">
+                                                Importar categorías por defecto
+                                            </Label>
+                                            <p className="text-sm text-muted-foreground">
+                                                Se crearán{' '}
+                                                {defaultCategories.length}{' '}
+                                                categorías con descripción para
+                                                clasificar incidencias.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <CollapsibleTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="shrink-0"
+                                        >
+                                            Ver resumen
+                                            <ChevronDown className="size-4" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                </div>
+                                <CollapsibleContent>
+                                    <DefaultCategoriesSummary
+                                        categories={defaultCategories}
+                                    />
+                                </CollapsibleContent>
+                            </Collapsible>
 
                             <div className="flex gap-3">
                                 <Button type="submit" disabled={processing}>

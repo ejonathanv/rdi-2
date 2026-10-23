@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Area\StoreAreaRequest;
 use App\Http\Requests\Area\UpdateAreaRequest;
 use App\Models\Area;
+use App\Support\DefaultIncidentCategoryCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,15 +38,21 @@ class AreaController extends Controller
     {
         $this->authorize('create', Area::class);
 
-        return Inertia::render('areas/create');
+        return Inertia::render('areas/create', [
+            'defaultCategories' => DefaultIncidentCategoryCatalog::summaries(),
+        ]);
     }
 
     public function store(StoreAreaRequest $request): RedirectResponse
     {
-        Area::query()->create([
-            ...$request->validated(),
+        $area = Area::query()->create([
+            ...$request->safe()->except(['is_active', 'import_default_categories']),
             'is_active' => $request->boolean('is_active'),
         ]);
+
+        if ($request->boolean('import_default_categories')) {
+            DefaultIncidentCategoryCatalog::importFor($area);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Area created.')]);
 

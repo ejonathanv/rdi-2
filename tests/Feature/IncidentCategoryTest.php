@@ -68,6 +68,53 @@ class IncidentCategoryTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_can_import_default_categories(): void
+    {
+        [$admin, $area] = $this->adminInArea();
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->post(route('incident-categories.import-defaults'))
+            ->assertRedirect(route('incident-categories.index'));
+
+        $this->assertSame(10, IncidentCategory::query()->where('area_id', $area->id)->count());
+        $this->assertDatabaseHas('incident_categories', [
+            'area_id' => $area->id,
+            'code' => 'ACTOS_INSEGUROS',
+        ]);
+    }
+
+    public function test_importing_default_categories_is_idempotent(): void
+    {
+        [$admin, $area] = $this->adminInArea();
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->post(route('incident-categories.import-defaults'))
+            ->assertRedirect(route('incident-categories.index'));
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->post(route('incident-categories.import-defaults'))
+            ->assertRedirect(route('incident-categories.index'));
+
+        $this->assertSame(10, IncidentCategory::query()->where('area_id', $area->id)->count());
+    }
+
+    public function test_empty_categories_index_includes_default_summaries(): void
+    {
+        [$admin, $area] = $this->adminInArea();
+
+        $this->actingAs($admin)
+            ->withSession(['current_area_id' => $area->id])
+            ->get(route('incident-categories.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('incident-categories/index')
+                ->has('categories', 0)
+                ->has('defaultCategories', 10));
+    }
+
     /**
      * @return array{0: User, 1: Area}
      */

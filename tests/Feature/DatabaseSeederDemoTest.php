@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\IncidentStatus;
 use App\Enums\PatrolRunStatus;
+use App\Models\Area;
 use App\Models\Checkpoint;
 use App\Models\Incident;
+use App\Models\IncidentCategory;
 use App\Models\PanicAlert;
 use App\Models\PatrolCheckpointVisit;
 use App\Models\PatrolRun;
@@ -56,5 +58,15 @@ class DatabaseSeederDemoTest extends TestCase
 
         $this->assertGreaterThanOrEqual(2, PanicAlert::query()->count());
         $this->assertTrue(User::query()->where('email', 'admin@example.com')->firstOrFail()->is_super_admin);
+
+        $plantaNorte = Area::query()->where('code', 'PLANTA-NORTE')->firstOrFail();
+        $this->assertSame(10, IncidentCategory::query()->where('area_id', $plantaNorte->id)->count());
+
+        $actosInseguros = IncidentCategory::query()
+            ->where('area_id', $plantaNorte->id)
+            ->where('code', 'ACTOS_INSEGUROS')
+            ->firstOrFail();
+
+        $this->assertNotNull($actosInseguros->description);
     }
 }

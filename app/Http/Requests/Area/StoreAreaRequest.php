@@ -24,6 +24,7 @@ class StoreAreaRequest extends FormRequest
             'code' => ['required', 'string', 'max:50', 'alpha_dash', Rule::unique('areas', 'code')],
             'location' => ['nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
+            'import_default_categories' => ['sometimes', 'boolean'],
         ];
     }
 }
