@@ -29,7 +29,7 @@ export function GuardApp({ logoUrl }: { logoUrl: string }) {
     const [route, navigate] = useHashRoute();
 
     return (
-        <div className="flex min-h-svh flex-col bg-background">
+        <div className="flex min-h-svh flex-col bg-(--brand-dark)">
             <header className="sticky top-0 z-40 bg-(--brand-dark) px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-3 text-white shadow">
                 <div className="mx-auto flex w-full max-w-lg items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -66,57 +66,59 @@ export function GuardApp({ logoUrl }: { logoUrl: string }) {
                 </div>
             </header>
 
-            {data.authRequired && (
-                <div className="bg-amber-100 px-4 py-3 text-sm text-amber-900">
-                    <div className="mx-auto flex w-full max-w-lg items-center justify-between gap-3">
-                        <span>
-                            Tu sesión expiró. Inicia sesión para enviar los
-                            pendientes; no se perderán.
-                        </span>
-                        {data.online && (
-                            <Button size="sm" variant="outline" asChild>
-                                <a href={login.url()}>
-                                    <LogIn className="size-4" />
-                                    Entrar
-                                </a>
-                            </Button>
-                        )}
+            <div className="flex flex-1 flex-col bg-background">
+                {data.authRequired && (
+                    <div className="bg-amber-100 px-4 py-3 text-sm text-amber-900">
+                        <div className="mx-auto flex w-full max-w-lg items-center justify-between gap-3">
+                            <span>
+                                Tu sesión expiró. Inicia sesión para enviar los
+                                pendientes; no se perderán.
+                            </span>
+                            {data.online && (
+                                <Button size="sm" variant="outline" asChild>
+                                    <a href={login.url()}>
+                                        <LogIn className="size-4" />
+                                        Entrar
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
-
-            <main className="mx-auto w-full max-w-lg flex-1 p-4 pb-10">
-                <Screen data={data} route={route} navigate={navigate} />
-            </main>
-
-            <footer className="mx-auto flex w-full max-w-lg flex-col items-center gap-3 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] text-center text-xs text-muted-foreground">
-                {data.pkg && data.online && (
-                    <form method="post" action={logout.url()}>
-                        <input
-                            type="hidden"
-                            name="_token"
-                            value={csrfToken()}
-                        />
-                        <button
-                            type="submit"
-                            className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
-                            disabled={data.outbox.length > 0}
-                            title={
-                                data.outbox.length > 0
-                                    ? 'Sincroniza los pendientes antes de cerrar sesión'
-                                    : undefined
-                            }
-                        >
-                            <LogOut className="size-3.5" />
-                            Cerrar sesión ({data.pkg.user.name})
-                        </button>
-                    </form>
                 )}
-                <p>
-                    {new Date().getFullYear()}, RDI - Reporte de Incidentes -
-                    Desarrollo de IP Media River.
-                </p>
-            </footer>
+
+                <main className="mx-auto w-full max-w-lg flex-1 p-4 pb-10">
+                    <Screen data={data} route={route} navigate={navigate} />
+                </main>
+
+                <footer className="mx-auto flex w-full max-w-lg flex-col items-center gap-3 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] text-center text-xs text-muted-foreground">
+                    {data.pkg && data.online && (
+                        <form method="post" action={logout.url()}>
+                            <input
+                                type="hidden"
+                                name="_token"
+                                value={csrfToken()}
+                            />
+                            <button
+                                type="submit"
+                                className="inline-flex items-center gap-1 underline-offset-4 hover:underline"
+                                disabled={data.outbox.length > 0}
+                                title={
+                                    data.outbox.length > 0
+                                        ? 'Sincroniza los pendientes antes de cerrar sesión'
+                                        : undefined
+                                }
+                            >
+                                <LogOut className="size-3.5" />
+                                Cerrar sesión ({data.pkg.user.name})
+                            </button>
+                        </form>
+                    )}
+                    <p>
+                        {new Date().getFullYear()}, RDI - Reporte de Incidentes
+                        - Desarrollo de IP Media River.
+                    </p>
+                </footer>
+            </div>
 
             <Toaster position="top-center" richColors />
         </div>

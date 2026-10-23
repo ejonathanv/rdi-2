@@ -75,7 +75,24 @@ class PwaTest extends TestCase
             ->get(route('guard.app'))
             ->assertOk()
             ->assertSee('id="guard-app"', false)
-            ->assertSee('name="csrf-token"', false);
+            ->assertSee('name="csrf-token"', false)
+            ->assertSee('viewport-fit=cover', false)
+            ->assertSee('black-translucent', false);
+    }
+
+    public function test_guard_app_shell_paints_status_bar_with_brand_dark_color(): void
+    {
+        BrandingSetting::current()->update(['dark_color' => '#112233']);
+
+        $area = Area::factory()->create();
+        $guard = User::factory()->create();
+        $guard->areas()->attach($area->id, ['role' => AreaRole::Guard->value]);
+
+        $this->actingAs($guard)
+            ->get(route('guard.app'))
+            ->assertOk()
+            ->assertSee('background-color: #112233', false)
+            ->assertSee('name="theme-color" content="#112233"', false);
     }
 
     public function test_non_guard_is_redirected_from_offline_app_to_home(): void

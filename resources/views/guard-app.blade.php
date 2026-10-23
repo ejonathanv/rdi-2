@@ -1,6 +1,6 @@
 @php($branding = \App\Models\BrandingSetting::current())
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" style="--brand-primary: {{ $branding->primary_color }}; --brand-light: {{ $branding->light_color }}; --brand-dark: {{ $branding->dark_color }};">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" style="background-color: {{ $branding->dark_color }}; --brand-primary: {{ $branding->primary_color }}; --brand-light: {{ $branding->light_color }}; --brand-dark: {{ $branding->dark_color }};">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -16,13 +16,18 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="{{ \App\Models\BrandingSetting::PwaAppName }}">
         <meta name="application-name" content="{{ \App\Models\BrandingSetting::PwaAppName }}">
+        <style>
+            html, body, #guard-app {
+                background-color: {{ $branding->dark_color }};
+            }
+        </style>
 
         @fonts
 
         @viteReactRefresh
         @vite(['resources/js/guard-app/main.tsx'])
     </head>
-    <body class="font-sans antialiased">
+    <body class="font-sans antialiased" style="background-color: {{ $branding->dark_color }};">
         <div id="guard-app" data-logo-url="{{ $branding->logoUrl() }}"></div>
     </body>
 </html>
